@@ -857,9 +857,8 @@ def ssh_retry(obj):
             sys_vars = group.vars
             server_ip = group.hosts[0].address
             LOG.info(server_ip)
-
             # skip ssh connectivity check if server is localhost
-            if is_host_localhost(server_ip):
+            if is_host_localhost(server_ip) or "podman" in sys_vars.get("ansible_connection", ""):
                 return False
 
             server_user = sys_vars['ansible_user']
