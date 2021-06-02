@@ -54,6 +54,9 @@ SYNCHRONIZE_PLAYBOOK = '''
         - debug:
            msg: "{{ artifacts_found | length }}"
 
+        - debug:
+           msg: "{{ artifacts_found }}"
+
         - name: create localhost artifact directory
           file:
             path: "{{ dest }}/localhost/"
@@ -101,7 +104,7 @@ SYNCHRONIZE_PLAYBOOK = '''
             | sed -E ':a;N;$!ba;s/\\r{0,1}\\n/\\\\n/g' | tr -d '\\r' >> {{ 'sync-results-' + uuid }}.txt
           loop: "{{ local_sync_output.results }}"
           delegate_to: localhost
-      when: localhost
+      when: localhost or ansible_connection == "podman"
 
     - block:
         - name: check if rsync package is installed
@@ -156,7 +159,7 @@ SYNCHRONIZE_PLAYBOOK = '''
           delegate_to: localhost
           with_items:
             - "{{ sync_output.results }}"
-      when: not localhost
+      when: not localhost and ansible_connection != "podman"
 '''
 
 GIT_CLONE_PLAYBOOK = '''
