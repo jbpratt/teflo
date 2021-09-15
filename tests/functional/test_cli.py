@@ -113,7 +113,7 @@ class TestCli(object):
     @staticmethod
     def test_empty_include_section(runner):
         results = runner.invoke(teflo, ['run', '-s', '../assets/empty_include.yml'])
-        assert 'Included File is invalid or Include section is empty.You have to provide valid scenario files ' \
+        assert 'Included File is invalid or Include section is empty. You have to provide valid scenario files ' \
                'to be included.' in results.output
         assert results.exit_code != 0
 

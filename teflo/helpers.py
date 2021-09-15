@@ -1508,7 +1508,7 @@ def validate_render_scenario(scenario, config, temp_data_raw=()):
                             raise TefloError('Error loading included scenario data! ' + item + str(err.problem_mark))
                     else:
                         # raising HelperError if included file is invalid or included section is empty
-                        raise HelpersError('Included File is invalid or Include section is empty .'
+                        raise HelpersError('Included File is invalid or Include section is empty. '
                                            'You have to provide valid scenario files to be included.')
                 scenario_stream_list.extend(include_template)
     except yaml.YAMLError as e:
