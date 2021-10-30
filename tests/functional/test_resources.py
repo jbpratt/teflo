@@ -61,37 +61,41 @@ def feature_toggle_config():
 
 @pytest.fixture
 def default_report_params():
-    params = dict(
+    return dict(
         description='description',
         executes='execute',
         provider=dict(name='polarion',
                       credential='polarion'
                       )
     )
-    return params
 
 
 @pytest.fixture
 def report_params_np():
-    params = dict(
+    return dict(
         description='description',
         executes='execute',
         importer='polarion',
         credential='polarion'
     )
-    return params
 
 
 @pytest.fixture
 def host2(default_host_params, config):
-    host2 = Asset(name='host_count', config=config, parameters=copy.deepcopy(default_host_params))
-    return host2
+    return Asset(
+        name='host_count',
+        config=config,
+        parameters=copy.deepcopy(default_host_params),
+    )
 
 
 @pytest.fixture
 def host3(default_host_params, config):
-    host3 = Asset(name='host_number_3', config=config, parameters=copy.deepcopy(default_host_params))
-    return host3
+    return Asset(
+        name='host_number_3',
+        config=config,
+        parameters=copy.deepcopy(default_host_params),
+    )
 
 
 @pytest.fixture
@@ -159,7 +163,7 @@ def task_list_host(host2, host):
     param2 = copy.deepcopy(host2.profile())
     param2.update(name='host_count_1')
 
-    task_result_list = [
+    return [
         {'status': 0,
          'task': 'teflotaskobj1',
          'methods': [{'status': 0, 'rvalue': [param1, param2], 'name':'run'}],
@@ -175,8 +179,6 @@ def task_list_host(host2, host):
          'msg': 'hostcreation2'
          }
     ]
-
-    return task_result_list
 
 
 @pytest.fixture
@@ -187,7 +189,7 @@ def task_list_host_1(host2):
     param2 = copy.deepcopy(host2.profile())
     param2.update(name='host_count_1')
 
-    task_result_list = [
+    return [
         {'status': 0,
          'task': 'teflotaskobj1',
          'methods': [{'status': 0, 'rvalue': [param1, param2], 'name':'run'}],
@@ -197,8 +199,6 @@ def task_list_host_1(host2):
          }
 
     ]
-
-    return task_result_list
 
 @pytest.fixture
 def task_list_host_with_3(host2, host, host3):
@@ -208,7 +208,7 @@ def task_list_host_with_3(host2, host, host3):
     param2 = copy.deepcopy(host2.profile())
     param2.update(name='host_count_1')
 
-    task_result_list = [
+    return [
         {'status': 0,
          'task': 'teflotaskobj3',
          'methods': [{'status': 0, 'rvalue': None, 'name':'run'}],
@@ -233,13 +233,11 @@ def task_list_host_with_3(host2, host, host3):
 
     ]
 
-    return task_result_list
-
 
 @pytest.fixture
 def task_list_host_with_3_no_count(host2, host, host3):
 
-    task_result_list = [
+    return [
         {'status': 0,
          'task': 'teflotaskobj3',
          'methods': [{'status': 0, 'rvalue': None, 'name':'run'}],
@@ -264,13 +262,11 @@ def task_list_host_with_3_no_count(host2, host, host3):
 
     ]
 
-    return task_result_list
-
 
 @pytest.fixture
 def task_list_report(report1):
 
-    task_result_list = [
+    return [
         {'status': 0,
          'task': 'ReportTask',
          'methods': [{'status': 0, 'rvalue': None, 'name': 'run'}],
@@ -279,13 +275,12 @@ def task_list_report(report1):
          'msg': 'reporting SampleTest.xml', 'name': 'SampleTest.xml'
          }
     ]
-    return task_result_list
 
 
 @pytest.fixture
 def task_list_report_2(report1, report2, report3):
 
-    task_result_list = [
+    return [
         {'status': 0,
          'task': 'ReportTask',
          'methods': [{'status': 0, 'rvalue': None, 'name': 'run'}],
@@ -308,7 +303,6 @@ def task_list_report_2(report1, report2, report3):
          'msg': 'reporting SampleTest3.xml', 'name': 'SampleTest3.xml'
          }
     ]
-    return task_result_list
 
 class TestActionResource(object):
     @staticmethod

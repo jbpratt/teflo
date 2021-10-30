@@ -123,7 +123,7 @@ class AnsibleController(object):
                           (self.ansible_inventory, extra_vars["hosts"], module)
 
         # add extra arguments
-        if module == "script" or module == "shell":
+        if module in ["script", "shell"]:
             if extra_args:
                 module_call += " -a '%s %s'" % (script, extra_args)
             else:
@@ -152,8 +152,7 @@ class AnsibleController(object):
             module_call += " -c local"
 
         logger.debug(module_call)
-        output = exec_local_cmd_pipe(module_call, logger)
-        return output
+        return exec_local_cmd_pipe(module_call, logger)
 
     @ssh_retry
     def run_playbook(self, playbook, logger, extra_vars=None, run_options=None,
@@ -178,8 +177,7 @@ class AnsibleController(object):
         if extra_vars is not None:
             for key in extra_vars:
                 if not isinstance(extra_vars[key], string_types) and key != 'file':
-                    extra_var_dict = dict()
-                    extra_var_dict[key] = extra_vars[key]
+                    extra_var_dict = {key: extra_vars[key]}
                     playbook_call += ' -e "%s" ' % extra_var_dict
                 elif key == "file":
                     # check to see if file is a list
@@ -214,8 +212,7 @@ class AnsibleController(object):
             playbook_call += " -%s" % ans_verbosity
 
         logger.debug(playbook_call)
-        output = exec_local_cmd_pipe(playbook_call, logger, env_var=env_var)
-        return output
+        return exec_local_cmd_pipe(playbook_call, logger, env_var=env_var)
 
 
 class AnsibleService(object):
@@ -271,22 +268,18 @@ class AnsibleService(object):
                         else:
                             group = host
                             join = True
-                        continue
                     else:
                         group = host
-                        continue
-                else:
-                    # If the hosts are Asset objects
-                    if len(self.hosts) > 1:
-                        if join:
-                            group += ', %s' % host.name
-                        else:
-                            group = host.name
-                            join = True
-                        continue
+                    continue
+                elif len(self.hosts) > 1:
+                    if join:
+                        group += ', %s' % host.name
                     else:
                         group = host.name
+                        join = True
                     continue
+                else:
+                    group = host.name
         return group
 
     def build_ans_extra_args(self, attr):
@@ -348,12 +341,13 @@ class AnsibleService(object):
 
         """
 
-        run_options = {}
+        run_options = {
+            val: self.options[val]
+            for val in self.user_run_vals
+            if self.options and val in self.options and self.options[val]
+        }
 
-        # override ansible options (user passed in vals for specific action)
-        for val in self.user_run_vals:
-            if self.options and val in self.options and self.options[val]:
-                run_options[val] = self.options[val]
+
         self.logger.info("Ansible options used: " + str(run_options))
 
         return run_options
@@ -376,11 +370,10 @@ class AnsibleService(object):
             if first:
                 run_options_str += '%s: %s\n' % (opt, run_options[opt])
                 first = False
+            elif block_options:
+                run_options_str += '          %s: %s\n' % (opt, run_options[opt])
             else:
-                if block_options:
-                    run_options_str += '          %s: %s\n' % (opt, run_options[opt])
-                else:
-                    run_options_str += '      %s: %s\n' % (opt, run_options[opt])
+                run_options_str += '      %s: %s\n' % (opt, run_options[opt])
 
         return run_options_str
 
@@ -531,7 +524,6 @@ class AnsibleService(object):
                  a specifc value of the config
         :rtype: dict if key not defined or string if defined
         """
-        returndict = {}
         acm = ConfigManager()
         a_settings = acm.data.get_settings()
         if key:
@@ -540,6 +532,7 @@ class AnsibleService(object):
                     return setting.value
             return None
         else:
+            returndict = {}
             for setting in a_settings:
                 if setting.name == "CONFIG_FILE":
                     self.logger.debug("Using %s for default configuration" % setting.value)
@@ -562,7 +555,10 @@ class AnsibleService(object):
         :param folder_name: name of the folder under data folder to move the ansible logs
         :type folder_name: str
         """
-        ans_logfile = self.ans_log_path if self.ans_log_path else self.get_default_config(key="DEFAULT_LOG_PATH")
+        ans_logfile = self.ans_log_path or self.get_default_config(
+            key="DEFAULT_LOG_PATH"
+        )
+
         self.logger.debug("The ansible log file being used is : %s" % ans_logfile)
         if ans_logfile:
             if folder_name:
@@ -607,8 +603,7 @@ class AnsibleService(object):
 
         self.logger.info('Executing playbook : %s' % playbook_name)
 
-        # Calling ansible controller run playbook method
-        results = self.ans_controller.run_playbook(
+        return self.ans_controller.run_playbook(
             playbook=playbook_name,
             logger=self.logger,
             extra_vars=extra_vars,
@@ -616,7 +611,6 @@ class AnsibleService(object):
             ans_verbosity=self.ans_verbosity,
             env_var=self.env_var
         )
-        return results
 
     def run_artifact_playbook(self, destination, artifacts):
         """Create playbook string for collecting artifacts"""
@@ -691,7 +685,7 @@ class AnsibleService(object):
 
         # Get results from the json file and build results in sh_results
         try:
-            sh_results = dict()
+            sh_results = {}
             with open('shell-results-' + self.uid + '.json') as f:
 
                 my_json = json.load(f)
@@ -784,7 +778,7 @@ class AnsibleService(object):
         os.remove(playbook)
 
         # Get results from the json file and build results in script_results
-        script_results = dict()
+        script_results = {}
         try:
             with open('script-results-' + self.uid + '.json') as f:
                 my_json = json.load(f)
@@ -827,17 +821,16 @@ class AnsibleCredentialManager(object):
         raise ValueError("you cannot set the Config object")
 
     def populate_credetials(self, config, credentials_path, vaultpass):
+        ret_str = ""
         if ansible_ver < 4 or is_py2:
             secret = [("default", VaultSecret(bytes(vaultpass.encode('utf-8'))))]
             vault = VaultLib(secret)
             cred = open(credentials_path, "rb").read()
             cred = vault.decrypt(cred)
-            ret_str = ""
             for asc in cred:
                 ret_str += asc
-            tmpf = open("tmppass", 'w')
-            tmpf.write(ret_str)
-            tmpf.close()
+            with open("tmppass", 'w') as tmpf:
+                tmpf.write(ret_str)
             tmpparser = RawConfigParser()
             tmpparser.read("tmppass")
             os.remove("tmppass")
@@ -846,7 +839,6 @@ class AnsibleCredentialManager(object):
             vault = VaultLib(secret)
             cred = open(credentials_path, "rb").read()
             cred = vault.decrypt(cred)
-            ret_str = ""
             for asc in cred:
                 ret_str += (chr(int(asc)))
             tmpparser = RawConfigParser()
@@ -855,10 +847,7 @@ class AnsibleCredentialManager(object):
 
     def populate_teflo_cfg_credentials(self):
         if not self.__config.get("CREDENTIALS") and self.__config.get("CREDENTIAL_PATH"):
-            if os.getenv("VAULTPASS"):
-                vaultpass = os.getenv("VAULTPASS")
-            else:
-                vaultpass = self.__config.get("VAULTPASS", "")
+            vaultpass = os.getenv("VAULTPASS") or self.__config.get("VAULTPASS", "")
             if vaultpass is "":
                 raise AnsibleVaultError('No vaultpass was found, please set the \
                 vaultpass in teflo.cfg or in environment variable.')

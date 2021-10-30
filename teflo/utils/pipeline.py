@@ -122,9 +122,7 @@ class PipelineBuilder(object):
             list()
         )
 
-        scenario_get_tasks = list()
-        scenario_get_tasks.extend([item for item in getattr(scenario, 'get_tasks')()])
-
+        scenario_get_tasks = list(getattr(scenario, 'get_tasks')())
         # Collecting resources based on task type
         if self.name.lower() in ['validate', 'provision', 'cleanup']:
             # scenario resource

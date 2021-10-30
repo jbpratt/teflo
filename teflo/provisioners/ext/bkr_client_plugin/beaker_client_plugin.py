@@ -87,37 +87,34 @@ class BeakerClientProvisionerPlugin(ProvisionerPlugin):
             self.logger.info('Beaker config already exists, skip creation.')
             return
 
-        # open conf file for writing
-        conf_obj = open(self.conf, 'w')
+        with open(self.conf, 'w') as conf_obj:
+            conf_obj.write('HUB_URL = "%s"\n' % self.url)
 
-        conf_obj.write('HUB_URL = "%s"\n' % self.url)
+            # write the path to beaker trusted ssl certs if specified.
+            if 'ca_cert' in self.provider_credentials and self.provider_credentials['ca_cert']:
+                self.logger.debug('ca_cert was provided %s' % self.provider_credentials['ca_cert'])
+                conf_obj.write('CA_CERT = "%s"\n' % self.provider_credentials['ca_cert'])
 
-        # write the path to beaker trusted ssl certs if specified.
-        if 'ca_cert' in self.provider_credentials and self.provider_credentials['ca_cert']:
-            self.logger.debug('ca_cert was provided %s' % self.provider_credentials['ca_cert'])
-            conf_obj.write('CA_CERT = "%s"\n' % self.provider_credentials['ca_cert'])
+            if 'username' in self.provider_credentials and self.provider_credentials['username'] \
+                    and 'password' in self.provider_credentials and self.provider_credentials['password']:
+                self.logger.debug('Authentication by username/password.')
 
-        if 'username' in self.provider_credentials and self.provider_credentials['username'] \
-                and 'password' in self.provider_credentials and self.provider_credentials['password']:
-            self.logger.debug('Authentication by username/password.')
+                conf_obj.write('AUTH_METHOD = "password"\n')
+                conf_obj.write('USERNAME = "%s"\n' % self.provider_credentials['username'])
+                conf_obj.write('PASSWORD = "%s"\n' % self.provider_credentials['password'])
+            elif 'keytab' in self.provider_credentials and self.provider_credentials['keytab'] \
+                    and 'keytab_principal' in self.provider_credentials \
+                    and self.provider_credentials["keytab_principal"]:
+                self.logger.debug('Authentication by keytab.')
 
-            conf_obj.write('AUTH_METHOD = "password"\n')
-            conf_obj.write('USERNAME = "%s"\n' % self.provider_credentials['username'])
-            conf_obj.write('PASSWORD = "%s"\n' % self.provider_credentials['password'])
-        elif 'keytab' in self.provider_credentials and self.provider_credentials['keytab'] \
-                and 'keytab_principal' in self.provider_credentials \
-                and self.provider_credentials["keytab_principal"]:
-            self.logger.debug('Authentication by keytab.')
+                conf_obj.write('AUTH_METHOD = "krbv"\n')
 
-            conf_obj.write('AUTH_METHOD = "krbv"\n')
+                keytab = os.path.join(self.workspace, self.provider_credentials['keytab'])
 
-            keytab = os.path.join(self.workspace, self.provider_credentials['keytab'])
-
-            conf_obj.write('KRB_KEYTAB = "%s"\n' % keytab)
-            conf_obj.write('KRB_PRINCIPAL = "%s"\n' % self.provider_credentials[
-                'keytab_principal'])
-            conf_obj.write('KRB_REALM = "REDHAT.COM"\n')
-        conf_obj.close()
+                conf_obj.write('KRB_KEYTAB = "%s"\n' % keytab)
+                conf_obj.write('KRB_PRINCIPAL = "%s"\n' % self.provider_credentials[
+                    'keytab_principal'])
+                conf_obj.write('KRB_REALM = "REDHAT.COM"\n')
 
     def _connect(self):
         """Connect to beaker."""
@@ -141,9 +138,8 @@ class BeakerClientProvisionerPlugin(ProvisionerPlugin):
 
         # set attributes for beaker xml object
         for key, value in self.provider_params.items():
-            if key is not 'name':
-                if value:
-                    setattr(self.bkr_xml, key, value)
+            if key is not 'name' and value:
+                setattr(self.bkr_xml, key, value)
 
         # generate beaker job xml (workflow-simple command)
         self.bkr_xml.generate_beaker_xml(
@@ -384,7 +380,7 @@ class BeakerClientProvisionerPlugin(ProvisionerPlugin):
 
         for task in tasklist:
             cname = task.getAttribute('name')
-            if cname == '/distribution/install' or cname == '/distribution/check-install':
+            if cname in ['/distribution/install', '/distribution/check-install']:
                 mydict["install_result"] = task.getAttribute('result')
                 mydict["install_status"] = task.getAttribute('status')
 
@@ -413,7 +409,7 @@ class BeakerClientProvisionerPlugin(ProvisionerPlugin):
         for task in tasklist:
             cname = task.getAttribute('name')
 
-            if cname == '/distribution/install' or cname == '/distribution/check-install':
+            if cname in ['/distribution/install', '/distribution/check-install']:
                 hostname = task.getElementsByTagName('system')[0]. \
                     getAttribute("value")
                 addr = socket.gethostbyname(hostname)
@@ -628,14 +624,13 @@ class BeakerXML(object):
                     if tp_op in taskparam:
                         tp_values = taskparam.split(tp_op)
                         tp_key = str(tp_values[0]).lower()
-                        if tp_key == 'reservetime':
-                            self.reservetime = tp_values[1]
-                            break
-                        else:
+                        if tp_key != 'reservetime':
                             raise AttributeError(
                                 "taskparam setting of %s not currently supported." %
                                 tp_key)
 
+                        self.reservetime = tp_values[1]
+                        break
         # Set arch
         self.cmd += "bkr workflow-simple --arch " + self.arch
 

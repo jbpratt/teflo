@@ -105,7 +105,7 @@ class Teflo(LoggerMixin, TimeMixin):
         self.config.load()
 
         # assigning cli options to teflo_options property
-        self._teflo_options = dict()
+        self._teflo_options = {}
         for key, value in kwargs.items():
             if key == 'labels' and value:
                 self._teflo_options['labels'] = value
@@ -273,11 +273,14 @@ class Teflo(LoggerMixin, TimeMixin):
 
     def list_labels(self):
         """This method displays all the labels in the scenario"""
-        res_label_dict = dict()
-        # getting all labels from all resources in the scenario
-        for res in self.scenario_graph.get_all_resources():
-            res_label_dict[res] = dict(name=getattr(res, 'name'),
-                                        labels=[lab for lab in getattr(res, 'labels')])
+        res_label_dict = {
+            res: dict(
+                name=getattr(res, 'name'),
+                labels=[lab for lab in getattr(res, 'labels')],
+            )
+            for res in self.scenario_graph.get_all_resources()
+        }
+
         self.logger.info('-' * 79)
         self.logger.info('SCENARIO LABELS'.center(79))
         self.logger.info('-' * 79)
@@ -319,7 +322,7 @@ class Teflo(LoggerMixin, TimeMixin):
         """
         if self.teflo_options:
             res_label_list = list()
-            user_labels = list()
+            user_labels = []
             # labels present in all res
             res_label_list.extend(
                 [lab for sc in self.scenario_graph for res in sc.get_all_resources() for lab in getattr(res, 'labels')])
@@ -350,9 +353,11 @@ class Teflo(LoggerMixin, TimeMixin):
                                                     (sc.name, sc.path), "green"))
                 self.logger.info("." * 50)
                 self.run_helper(sc=sc, tasklist=["validate"])
-            if getattr(sc, "overall_status", None) is not None:
-                if getattr(sc, "overall_status") == 1:
-                    do_validate = False
+            if (
+                getattr(sc, "overall_status", None) is not None
+                and getattr(sc, "overall_status") == 1
+            ):
+                do_validate = False
         self.collect_final_passed_failed_tasks_status(final_passed_tasks, final_failed_tasks, status)
 
     def run_all_helper(self, tasklist: list, final_passed_tasks: list, final_failed_tasks: list, status: list):
@@ -435,9 +440,7 @@ class Teflo(LoggerMixin, TimeMixin):
         orchestarte/execute/report
         """
 
-        cleanup_sc = []
-        for sc in self.scenario_graph:
-            cleanup_sc.append(sc)
+        cleanup_sc = [sc for sc in self.scenario_graph]
         cleanup_sc.reverse()
         sc: Scenario
         for sc in cleanup_sc:
@@ -720,9 +723,12 @@ class Teflo(LoggerMixin, TimeMixin):
         else:
             root_scenario_results_path = os.path.join(
                 self.data_folder, self.root_scenario_filename.split(".")[0] + "_results.yml")
-        if root_scenario_results_path != self.final_results_yml_path and self.root_scenario_filename != "results.yml":
-            if self._final_results_yml_exists():
-                os.remove(self.final_results_yml_path)
+        if (
+            root_scenario_results_path != self.final_results_yml_path
+            and self.root_scenario_filename != "results.yml"
+            and self._final_results_yml_exists()
+        ):
+            os.remove(self.final_results_yml_path)
         os.system("cp %s %s" % (root_scenario_results_path, self.data_folder_results_yml_path))
 
     def _print_header(self, tasklist):
@@ -793,10 +799,9 @@ class Teflo(LoggerMixin, TimeMixin):
 
         # also archive the inventory file if a static inventory directory differnt thant default inventory dir
         # is specified
-        if self.static_inv_dir:
-            if os.listdir(self.config['INVENTORY_FOLDER']):
-                inv_results_dir = os.path.join(self.config['RESULTS_FOLDER'], 'inventory')
-                os.system('cp -r %s/* %s' % (self.config['INVENTORY_FOLDER'], inv_results_dir))
+        if self.static_inv_dir and os.listdir(self.config['INVENTORY_FOLDER']):
+            inv_results_dir = os.path.join(self.config['RESULTS_FOLDER'], 'inventory')
+            os.system('cp -r %s/* %s' % (self.config['INVENTORY_FOLDER'], inv_results_dir))
 
     def create_teflo_workspace(self, ctx, dirname):
         """Clones the teflo examples git repo and copy the workspace files."""

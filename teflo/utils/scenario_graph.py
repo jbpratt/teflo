@@ -116,10 +116,7 @@ class ScenarioGraph():
 # size
     @property
     def size(self):
-        count = 0
-        for sc in self:
-            count += 1
-        return count
+        return sum(1 for _ in self)
 
     @size.setter
     def size(self, size):
@@ -407,11 +404,8 @@ class ScenarioGraph():
         from the current scenario graph -> list
         """
 
-        all_resources = list()
+        all_resources = list(self.get_assets())
 
-        # The order is like below so we always execute resources in below order for a single scenario node
-
-        all_resources.extend([item for item in self.get_assets()])
         all_resources.extend([item for item in self.get_actions()])
         all_resources.extend([item for item in self.get_executes()])
         all_resources.extend([item for item in self.get_reports()])

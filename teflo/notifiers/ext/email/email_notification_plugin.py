@@ -89,17 +89,16 @@ class EmailNotificationPlugin(NotificationPlugin):
                     TefloNotifierError('The Start TLS is not available for the server.')
 
             if self.creds_params.get('smtp_user', False) and self.creds_params.get('smtp_password', False):
-                if smtp.has_extn('AUTH'):
-                    try:
-                        smtp.login(self.creds_params.get('smtp_user'), self.creds_params.get('smtp_password'))
-                    except smtplib.SMTPAuthenticationError:
-                        self.logger.error('Failed to authentication. Please check the username and/or password.')
-                        raise
-                    except smtplib.SMTPException:
-                        self.logger.error('Looks like no suitable authentication method was found.')
-                        raise
-                else:
+                if not smtp.has_extn('AUTH'):
                     raise TefloNotifierError('Authentication is not available for the server.')
+                try:
+                    smtp.login(self.creds_params.get('smtp_user'), self.creds_params.get('smtp_password'))
+                except smtplib.SMTPAuthenticationError:
+                    self.logger.error('Failed to authentication. Please check the username and/or password.')
+                    raise
+                except smtplib.SMTPException:
+                    self.logger.error('Looks like no suitable authentication method was found.')
+                    raise
             mail = self._build_msg()
             smtp.sendmail(from_addr=self.sender, to_addrs=self.receivers, msg=mail)
 
@@ -140,28 +139,29 @@ class EmailNotificationPlugin(NotificationPlugin):
         """
 
         # no msg body params assume using teflo default template
-        if not self.body and not self.body_tmpl:
-            self.logger.info('Using generic teflo email template')
-            if not getattr(self.notification, 'on_start'):
-                self.body = template_render(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                            'templates/email_txt_template.jinja')
-                                                            ),
-                                            generate_default_template_vars(self.scenario, self.notification)
-                                            )
+        if not self.body:
+            if not self.body_tmpl:
+                self.logger.info('Using generic teflo email template')
+                if not getattr(self.notification, 'on_start'):
+                    self.body = template_render(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                                'templates/email_txt_template.jinja')
+                                                                ),
+                                                generate_default_template_vars(self.scenario, self.notification)
+                                                )
+                else:
+                    self.body = template_render(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                                             'templates/email_on_start_txt_template.jinja')
+                                                                ),
+                                                generate_default_template_vars(self.scenario, self.notification)
+                                                )
             else:
-                self.body = template_render(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                                         'templates/email_on_start_txt_template.jinja')
-                                                            ),
-                                            generate_default_template_vars(self.scenario, self.notification)
-                                            )
-        elif not self.body and self.body_tmpl:
-            var_dict = dict()
-            # Updating the the var_dict with scenario object to be used if needed by the user template
-            var_dict.update(scenario=generate_default_template_vars(self.scenario, self.notification).get('scenario'))
-            # Updating the the var_dict with environmental variables be used in the user template
-            var_dict.update(os.environ)
-            self.body = template_render(os.path.abspath(os.path.join(getattr(self.notification, 'workspace'),
-                                        self.body_tmpl)), var_dict)
+                var_dict = {}
+                # Updating the the var_dict with scenario object to be used if needed by the user template
+                var_dict.update(scenario=generate_default_template_vars(self.scenario, self.notification).get('scenario'))
+                # Updating the the var_dict with environmental variables be used in the user template
+                var_dict.update(os.environ)
+                self.body = template_render(os.path.abspath(os.path.join(getattr(self.notification, 'workspace'),
+                                            self.body_tmpl)), var_dict)
 
         self.logger.debug('The loaded message body is: \n')
         self.logger.debug(self.body)

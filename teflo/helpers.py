@@ -102,10 +102,12 @@ def get_provisioners_plugin_classes():
     """Return all provisioner plugin classes discovered by teflo
     :return: The list of provisioner plugin classes
     """
-    provisioner_plugin_dict = {}
-    for entry_point in pkg_resources.iter_entry_points('provisioner_plugins'):
-        provisioner_plugin_dict[entry_point.name] = entry_point.load()
-    return provisioner_plugin_dict
+    return {
+        entry_point.name: entry_point.load()
+        for entry_point in pkg_resources.iter_entry_points(
+            'provisioner_plugins'
+        )
+    }
 
 
 def get_default_provisioner_plugin(provider=None):
@@ -137,10 +139,10 @@ def get_provisioners_plugins_list():
     :return: list of provisioner gateways
     """
 
-    valid_provisioners = []
-    for provisioner_gateway_class in get_provisioners_plugin_classes().values():
-        valid_provisioners.append(provisioner_gateway_class.__plugin_name__)
-    return valid_provisioners
+    return [
+        provisioner_gateway_class.__plugin_name__
+        for provisioner_gateway_class in get_provisioners_plugin_classes().values()
+    ]
 
 
 def get_provisioner_plugin_class(name):
@@ -159,10 +161,10 @@ def get_provider_plugin_classes():
     """Return all provider plugin classes discovered by teflo
     :return: The list of provider plugin classes
     """
-    provider_plugin_dict = {}
-    for entry_point in pkg_resources.iter_entry_points('provider_plugins'):
-        provider_plugin_dict[entry_point.name] = entry_point.load()
-    return provider_plugin_dict
+    return {
+        entry_point.name: entry_point.load()
+        for entry_point in pkg_resources.iter_entry_points('provider_plugins')
+    }
 
 
 def get_provider_plugin_class(name):
@@ -191,9 +193,13 @@ def get_orchestrators_plugin_classes():
     """Return all orchestrator plugin classes discovered by teflo
     :return: The list of orchestrator plugin classes
     """
-    orchestrator_plugin_dict = {}
-    for entry_point in pkg_resources.iter_entry_points('orchestrator_plugins'):
-        orchestrator_plugin_dict[entry_point.name] = entry_point.load()
+    orchestrator_plugin_dict = {
+        entry_point.name: entry_point.load()
+        for entry_point in pkg_resources.iter_entry_points(
+            'orchestrator_plugins'
+        )
+    }
+
     return orchestrator_plugin_dict.values()
 
 
@@ -223,9 +229,11 @@ def get_executors_plugin_classes():
     """Return all executor plugin classes discovered by teflo
     :return: The list of executor plugin classes
     """
-    executor_plugin_dict = {}
-    for entry_point in pkg_resources.iter_entry_points('executor_plugins'):
-        executor_plugin_dict[entry_point.name] = entry_point.load()
+    executor_plugin_dict = {
+        entry_point.name: entry_point.load()
+        for entry_point in pkg_resources.iter_entry_points('executor_plugins')
+    }
+
     return executor_plugin_dict.values()
 
 
@@ -255,9 +263,11 @@ def get_importers_plugin_classes():
     """Return all importer plugin classes discovered by teflo
     :return: The list of importer plugin classes
     """
-    ext_plugin_dict = {}
-    for entry_point in pkg_resources.iter_entry_points('importer_plugins'):
-        ext_plugin_dict[entry_point.name] = entry_point.load()
+    ext_plugin_dict = {
+        entry_point.name: entry_point.load()
+        for entry_point in pkg_resources.iter_entry_points('importer_plugins')
+    }
+
     return ext_plugin_dict.values()
 
 
@@ -276,10 +286,10 @@ def get_importers_plugin_list():
     Returns a list of all the valid importer gateways.
     :return: list of importer plugin names
     """
-    valid_reporters = []
-    for reporter_plugin_class in get_importers_plugin_classes():
-        valid_reporters.append(reporter_plugin_class.__plugin_name__)
-    return valid_reporters
+    return [
+        reporter_plugin_class.__plugin_name__
+        for reporter_plugin_class in get_importers_plugin_classes()
+    ]
 
 
 def get_importer_plugin_class(name):
@@ -310,9 +320,8 @@ def is_provider_mapped_to_provisioner(provider, provisioner):
                 for p in prov_val:
                     if p == provisioner:
                         return True
-            else:
-                if prov_val == provisioner:
-                    return True
+            elif prov_val == provisioner:
+                return True
     return False
 
 
@@ -329,9 +338,13 @@ def get_notifiers_plugin_classes():
     """Return all notification plugin classes discovered by teflo
     :return: The list of notification plugin classes
     """
-    notifier_plugin_dict = {}
-    for entry_point in pkg_resources.iter_entry_points('notification_plugins'):
-        notifier_plugin_dict[entry_point.name] = entry_point.load()
+    notifier_plugin_dict = {
+        entry_point.name: entry_point.load()
+        for entry_point in pkg_resources.iter_entry_points(
+            'notification_plugins'
+        )
+    }
+
     return notifier_plugin_dict.values()
 
 
@@ -423,35 +436,33 @@ def file_mgmt(operation, file_path, content=None, cfg_parser=None):
 
     if operation in ['r', 'read']:
         # Read
-        if os.path.exists(file_path):
-            if file_ext == ".json":
-                # json
-                with open(file_path) as f_raw:
-                    return json.load(f_raw)
-            elif file_ext in ['.yaml', '.yml']:
-                # yaml
-                with open(file_path) as f_raw:
-                    return yaml.load(f_raw)
-            else:
-                # text
-                with open(file_path) as f_raw:
-                    if cfg_parser is not None:
-                        # Config parser file
-                        return cfg_parser.readfp(f_raw)
-                    else:
-                        # lets check if it is json
-                        data = f_raw.read()
-                        try:
-                            return json.load(data)
-                        except Exception:
-                            # it wasn't json, lets try yaml
-                            try:
-                                return yaml.load(data)
-                            except Exception:
-                                # it wasn't yaml, lets just return pure string
-                                return data
-        else:
+        if not os.path.exists(file_path):
             raise IOError("%s file not found!" % file_path)
+        if file_ext == ".json":
+            # json
+            with open(file_path) as f_raw:
+                return json.load(f_raw)
+        elif file_ext in ['.yaml', '.yml']:
+            # yaml
+            with open(file_path) as f_raw:
+                return yaml.load(f_raw)
+        else:
+                # text
+            with open(file_path) as f_raw:
+                if cfg_parser is not None:
+                    # Config parser file
+                    return cfg_parser.readfp(f_raw)
+                # lets check if it is json
+                data = f_raw.read()
+                try:
+                    return json.load(data)
+                except Exception:
+                    # it wasn't json, lets try yaml
+                    try:
+                        return yaml.load(data)
+                    except Exception:
+                        # it wasn't yaml, lets just return pure string
+                        return data
     elif operation in ['w', 'write']:
         # Write
         mode = 'w+' if os.path.exists(file_path) else 'w'
@@ -601,8 +612,7 @@ def filter_actions_on_failed_status(action_list):
     """
     for index, action_item in enumerate(action_list):
         if action_item.status == 1:
-            new_list = action_list[index:]
-            return new_list
+            return action_list[index:]
     return action_list
 
 
@@ -636,7 +646,7 @@ def filter_notifications_on_trigger(state, notify_list, passed_tasks, failed_tas
         return [res for res in notify_list if getattr(res, 'on_start') and len(set(getattr(res, 'on_tasks', [])).
                                                                                intersection(passed_tasks)) != 0]
     elif state == 'on_complete':
-        ocl = list()
+        ocl = []
 
         # filter out all on_start notifications
         nl = [res for res in notify_list if not getattr(res, 'on_start')]
@@ -704,9 +714,9 @@ def fetch_assets(hosts, task, all_hosts=True):
     """
 
     # placeholders
-    _hosts = list()
-    _all_hosts = list()
-    _filtered_hosts = list()
+    _hosts = []
+    _all_hosts = []
+    _filtered_hosts = []
     _type = None
 
     # determine the task attribute where hosts are stored
@@ -716,10 +726,11 @@ def fetch_assets(hosts, task, all_hosts=True):
         _type = 'package'
 
     # determine the task host data types
-    if all(isinstance(item, string_types) for item in task[_type].hosts):
-        for host in hosts:
-            if all_hosts:
-                _all_hosts.append(host)
+    for host in hosts:
+        if all_hosts:
+            _all_hosts.append(host)
+            # determine the task host data types
+        if all(isinstance(item, string_types) for item in task[_type].hosts):
             if 'all' in task[_type].hosts:
                 _hosts.append(host)
                 continue
@@ -730,10 +741,7 @@ def fetch_assets(hosts, task, all_hosts=True):
                 for g in host.groups:
                     if g in task[_type].hosts:
                         _hosts.append(host)
-    else:
-        for host in hosts:
-            if all_hosts:
-                _all_hosts.append(host)
+        else:
             for task_host in task[_type].hosts:
                 # additional check task_host.name in host.name was put in case when linchpin count was
                 # used and there are host resources with names matching original resource name
@@ -767,7 +775,7 @@ def fetch_executes(executes, hosts, task):
     """
 
     # placeholders
-    _executes = list()
+    _executes = []
     _type = None
 
     # determine the task attribute where hosts are stored
@@ -776,22 +784,18 @@ def fetch_executes(executes, hosts, task):
     elif 'package' in task:
         _type = 'package'
 
-    # determine the task host data types
-    if all(isinstance(item, string_types) for item in task[_type].executes):
-        for e in executes:
+    for e in executes:
+        if all(isinstance(item, string_types) for item in task[_type].executes):
             if e.name in task[_type].executes:
                 # fetch hosts to be used later for data injection
-                dummy_task = dict()
-                dummy_task[_type] = e
+                dummy_task = {_type: e}
                 dummy_task = fetch_assets(hosts, dummy_task)
                 _executes.append(dummy_task[_type])
-    else:
-        for e in executes:
+        else:
             for task_execute in task[_type].executes:
                 if e.name == task_execute.name:
                     # fetch hosts to be used later for data injection
-                    dummy_task = dict()
-                    dummy_task[_type] = e
+                    dummy_task = {_type: e}
                     dummy_task = fetch_assets(hosts, dummy_task)
                     _executes.append(dummy_task[_type])
                     break
@@ -890,7 +894,7 @@ def ssh_retry(obj):
 
                 except (SSHError, HostKeyNotVerifiable, AuthenticationError, socket.error, ConnectFailed,
                         ConnectionLost) as ex:
-                    attempt = attempt + 1
+                    attempt += 1
                     LOG.error(ex)
                     LOG.error("Server %s - IP: %s is unreachable." % (group,
                                                                       server_ip))
@@ -963,7 +967,7 @@ def get_ans_verbosity(config):
             if verbosity not in [0, 1, 2, 3, 4]:
                 LOG.warning(f"Ansible verbosity level: {verbosity} is invalid. Defaulting to verbosity 0.")
                 raise ValueError
-            verbosity = "v" * verbosity
+            verbosity *= "v"
         except ValueError:
             verbosity = None
         ans_verbosity = verbosity
@@ -1068,12 +1072,10 @@ class DataInjector(object):
                         if value:
                             # get the latest value from the dictionary
                             value = value[key][pos]
-                        else:
-                            # get latest value from host
-                            if hasattr(host, key) and index <= 0:
-                                value = getattr(host, key)[pos]
-                                if isinstance(value, str):
-                                    break
+                        elif hasattr(host, key) and index <= 0:
+                            value = getattr(host, key)[pos]
+                            if isinstance(value, str):
+                                break
 
                         # is the value a dict, if so keep going!
                         if isinstance(value, dict):
@@ -1121,7 +1123,7 @@ class DataInjector(object):
         :param dictionary:
         :return:
         """
-        injected_dict = dict()
+        injected_dict = {}
 
         for key, value in dictionary.items():
             inj_key = self.inject(key)
@@ -1133,8 +1135,7 @@ class DataInjector(object):
                 inj_val = self.inject(value)
             else:
                 inj_val = value
-            injected_dict.update({inj_key: inj_val})
-
+            injected_dict[inj_key] = inj_val
         return injected_dict
 
     def inject_list(self, item_list):
@@ -1145,7 +1146,7 @@ class DataInjector(object):
         :param item_list: a list to inject data into
         :return:
         """
-        injected_list = list()
+        injected_list = []
 
         for item in item_list:
             if isinstance(item, list):
@@ -1176,9 +1177,7 @@ def is_host_localhost(host_ip):
     :return: whether the ip address is localhost or not
     :rtype: bool
     """
-    if host_ip not in ['127.0.0.1', 'localhost']:
-        return False
-    return True
+    return host_ip in ['127.0.0.1', 'localhost']
 
 
 def find_artifacts_on_disk(data_folder, report_name, art_location=[]):
@@ -1307,8 +1306,7 @@ def build_artifact_regex_query(name):
     """
 
     regex = fnmatch.translate(name)
-    regquery = re.compile(regex)
-    return regquery
+    return re.compile(regex)
 
 
 def check_for_var_file(config):
@@ -1329,7 +1327,7 @@ def check_for_var_file(config):
     :rtype: list of variable file paths
     """
 
-    var_file_list = list()
+    var_file_list = []
     var_dir = os.path.join(config.get('WORKSPACE'), 'vars')
     workspace_var_file = os.path.join(config.get('WORKSPACE'), 'var_file.yml')
     if config.get('VAR_FILE'):
@@ -1384,11 +1382,11 @@ def validate_brackets(input):
     for char in input:
         if char == "{":
             left.append(char)
-        if char == "}":
-            if len(left) == 0:
+        elif char == "}":
+            if not left:
                 return False
             left.pop()
-    return len(left) == 0
+    return not left
 
 
 def replace_brackets(input, temp_data):
@@ -1403,30 +1401,33 @@ def replace_brackets(input, temp_data):
     :param type: str
     :return new string with variables' values
     """
-    if validate_brackets(input) and input.__contains__("{{") and input.__contains__("}}"):
-        left = []
-        key_start, key_end = 0, 0
-        replace_start, replace_end = 0, 0
-        for i in range(len(input)):
-            if input[i] == "{":
-                left.append(i)
-            elif input[i] == "}":
-                key_start, key_end = left.pop() + 1, i
-                replace_start, replace_end = left.pop(), i + 2
-                break
-
-        key = input[key_start:key_end].strip()
-        if not isinstance(temp_data[key], str):
-            temp_data.update({key: preprocyaml(temp_data[key], temp_data)})
-
-        if isinstance(temp_data[key], str):
-            ret = input.replace(input[replace_start:replace_end], temp_data[key], 1)
-        elif isinstance(temp_data[key], list) or isinstance(temp_data[key], dict):
-            ret = temp_data[key]
-
-        return replace_brackets(ret, temp_data)
-    else:
+    if (
+        not validate_brackets(input)
+        or not input.__contains__("{{")
+        or not input.__contains__("}}")
+    ):
         return input
+    left = []
+    key_start, key_end = 0, 0
+    replace_start, replace_end = 0, 0
+    for i in range(len(input)):
+        if input[i] == "{":
+            left.append(i)
+        elif input[i] == "}":
+            key_start, key_end = left.pop() + 1, i
+            replace_start, replace_end = left.pop(), i + 2
+            break
+
+    key = input[key_start:key_end].strip()
+    if not isinstance(temp_data[key], str):
+        temp_data.update({key: preprocyaml(temp_data[key], temp_data)})
+
+    if isinstance(temp_data[key], str):
+        ret = input.replace(input[replace_start:replace_end], temp_data[key], 1)
+    elif isinstance(temp_data[key], (list, dict)):
+        ret = temp_data[key]
+
+    return replace_brackets(ret, temp_data)
 
 
 def preprocyaml_str(input, temp_data):
@@ -1449,10 +1450,7 @@ def preprocyaml(input, temp_data):
     if isinstance(input, str):
         return preprocyaml_str(input, temp_data)
     elif isinstance(input, list):
-        new_list = []
-        for val in input:
-            new_list.append(preprocyaml(val, temp_data))
-        return new_list
+        return [preprocyaml(val, temp_data) for val in input]
     elif isinstance(input, comments.CommentedMap):
         new_dict = {}
         for item in input._items():
@@ -1461,11 +1459,11 @@ def preprocyaml(input, temp_data):
                 for key in item[0].keys():
                     if not isinstance(temp_data[key], str):
                         temp_data.update({key: preprocyaml(temp_data[key], temp_data)})
-                    result = result + temp_data[key]
+                    result += temp_data[key]
                 return result
-            new_dict.update({item[0]: item[1]})
+            new_dict[item[0]] = item[1]
         for item in new_dict.items():
-            new_dict.update({item[0]: preprocyaml(item[1], temp_data)})
+            new_dict[item[0]] = preprocyaml(item[1], temp_data)
         return new_dict
     else:
         return input
@@ -1481,10 +1479,7 @@ def preproc_path(data_folder: str) -> str:
     """
 
     ret = ""
-    if data_folder[0] == ".":
-        ret = data_folder[1:]
-    else:
-        ret = data_folder
+    ret = data_folder[1:] if data_folder[0] == "." else data_folder
     ret = ret[:ret.rindex("/")]
     return ret
 
@@ -1518,8 +1513,7 @@ def validate_render_scenario(scenario_path, config, temp_data_raw=()):
     [temp_data.update(t) for t in temp_data_objs]
 
     for item in temp_data.items():
-        temp_data.update({item[0]: preprocyaml(item[1], temp_data)})
-
+        temp_data[item[0]] = preprocyaml(item[1], temp_data)
     temp_data.update(os.environ)
 
     try:
@@ -1577,34 +1571,36 @@ def build_scenario_graph(root_scenario_path: str, config, root_scenario_temp_dat
                         % item)
                 sc_fullpath = os.path.join(config['WORKSPACE'], item)
                 sc_abspath = item
-                if os.path.isfile(sc_fullpath) or os.path.isfile(sc_abspath):
-                    path = os.path.basename(item)
-                    if os.path.isfile(os.path.join(config['WORKSPACE'], item)):
-                        item = os.path.join(config['WORKSPACE'], item)
-                    # check to verify the data in included scenario is valid
-                    try:
-                        yaml.safe_load(template_render(item, root_scenario_temp_data))
-                        child_sc = Scenario(config=config, path=path)
-                        child_sc.fullpath = sc_fullpath if os.path.isfile(sc_fullpath) else sc_abspath
-                        child_sc.yaml_data = template_render(item, root_scenario_temp_data)
-                        parent_scenario.add_child_scenario(child_sc)
-                        # use filename because the scenario name could
-                        # contain some special characters, which is not good for
-                        # file generation
-                        if preproc_path(config['RESULTS_FOLDER']) in child_sc.fullpath or \
-                                preproc_path(config["DATA_FOLDER"]) in child_sc.fullpath:
-                            parent_scenario.included_scenario_path = os.path.join(
-                                config['RESULTS_FOLDER'], child_sc.path)
-                        else:
-                            parent_scenario.included_scenario_path = os.path.join(
-                                config['RESULTS_FOLDER'], child_sc.path.split(".")[0] + "_results.yml")
-                    except yaml.YAMLError as err:
-                        # raising Teflo error to differentiate the yaml issue is with included scenario
-                        raise TefloError('Error loading included '
-                                                'scenario data! ' + item + str(err.problem_mark))
-                else:
+                if not os.path.isfile(sc_fullpath) and not os.path.isfile(
+                    sc_abspath
+                ):
                     raise TefloError('Included File is invalid or Include section is empty.'
                                            ' You have to provide valid scenario files to be included.')
+
+                path = os.path.basename(item)
+                if os.path.isfile(os.path.join(config['WORKSPACE'], item)):
+                    item = os.path.join(config['WORKSPACE'], item)
+                # check to verify the data in included scenario is valid
+                try:
+                    yaml.safe_load(template_render(item, root_scenario_temp_data))
+                    child_sc = Scenario(config=config, path=path)
+                    child_sc.fullpath = sc_fullpath if os.path.isfile(sc_fullpath) else sc_abspath
+                    child_sc.yaml_data = template_render(item, root_scenario_temp_data)
+                    parent_scenario.add_child_scenario(child_sc)
+                    # use filename because the scenario name could
+                    # contain some special characters, which is not good for
+                    # file generation
+                    if preproc_path(config['RESULTS_FOLDER']) in child_sc.fullpath or \
+                            preproc_path(config["DATA_FOLDER"]) in child_sc.fullpath:
+                        parent_scenario.included_scenario_path = os.path.join(
+                            config['RESULTS_FOLDER'], child_sc.path)
+                    else:
+                        parent_scenario.included_scenario_path = os.path.join(
+                            config['RESULTS_FOLDER'], child_sc.path.split(".")[0] + "_results.yml")
+                except yaml.YAMLError as err:
+                    # raising Teflo error to differentiate the yaml issue is with included scenario
+                    raise TefloError('Error loading included '
+                                            'scenario data! ' + item + str(err.problem_mark))
 
     def include(unchecked_list: list, checked_list: dict):
         '''
@@ -1710,10 +1706,7 @@ def set_task_class_concurrency(task, resource):
     :return: TefloTask class
     """
     val = getattr(resource, 'config')['TASK_CONCURRENCY'].get(task['task'].__task_name__.upper())
-    if val.lower() == 'true':
-        val = True
-    else:
-        val = False
+    val = val.lower() == 'true'
     task['task'].__concurrent__ = val
     return task
 
@@ -1727,21 +1720,19 @@ def mask_credentials_password(credentials):
     :return: credentials dict
     """
     asteriks = ''
-    masked_creds = dict()
+    masked_creds = {}
     if credentials:
         for k, v in credentials.items():
             for p in ['password', 'token', 'key', 'id']:
                 if p not in k:
                     continue
-                else:
-                    for i in range(0, len(v)):
-                        asteriks += '*' * random.randint(1, 3)
+                for _ in range(len(v)):
+                    asteriks += '*' * random.randint(1, 3)
             if asteriks != '':
-                masked_creds.update({k: asteriks})
+                masked_creds[k] = asteriks
                 asteriks = ''
                 continue
-            masked_creds.update({k: v})
-
+            masked_creds[k] = v
     return masked_creds
 
 
@@ -1767,8 +1758,7 @@ def validate_cli_scenario_option(ctx, scenario, config, vars_data=None):
 
     # Checking if include section is present and getting validated scenario stream/s
     try:
-        scenario_graph = validate_render_scenario(scenario, config, vars_data)
-        return scenario_graph
+        return validate_render_scenario(scenario, config, vars_data)
     except yaml.YAMLError as err:
         click.echo('Error loading scenario data! %s' % err)
         ctx.exit(1)
@@ -1782,11 +1772,11 @@ def validate_cli_scenario_option(ctx, scenario, config, vars_data=None):
     except jinja2.exceptions.UndefinedError as err:
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
-        if calframe[1][3] is 'show':
-            click.echo("\n\nYou need to use --vars-data to fill your variables for show command")
-            ctx.exit(1)
-        else:
+        if calframe[1][3] is not 'show':
             raise TefloError("You need to fill your variable with --vars-data label")
+
+        click.echo("\n\nYou need to use --vars-data to fill your variables for show command")
+        ctx.exit(1)
 
 
 def create_individual_testrun_results(artifact_locations, config):
@@ -1801,22 +1791,24 @@ def create_individual_testrun_results(artifact_locations, config):
                        files found
      :rtype testruns: dict
     """
-    fnd_paths = list()
-    individual_res = list()
+    fnd_paths = []
+    individual_res = []
     # build the regex query to get only xml files
     regquery = build_artifact_regex_query('*.xml')
     # search the artifact location dictionary provided to search in the .results folder
     fnd_paths.extend(search_artifact_location_dict(artifact_locations, '*.xml', config.get('RESULTS_FOLDER'), regquery))
     try:
         for path in fnd_paths:
-            trun = dict()
-            trun['total_tests'] = 0
-            trun['failed_tests'] = 0
-            trun['skipped_tests'] = 0
-            trun['passed_tests'] = 0
+            trun = {
+                'total_tests': 0,
+                'failed_tests': 0,
+                'skipped_tests': 0,
+                'passed_tests': 0,
+            }
+
             tree = ET.parse(path)
             root = tree.getroot()
-            temp = list()
+            temp = []
             # if root.tag is testsuites then collect all the element which are 'testsuite'
             # if root.tag is testsuite then just collect that element
             if root.tag == "testsuites":
@@ -1825,13 +1817,23 @@ def create_individual_testrun_results(artifact_locations, config):
                 temp.append(root)
             if temp:
                 for test in temp:
-                    trun['total_tests'] = trun['total_tests'] + len(test.findall('testcase'))
-                    trun['failed_tests'] = trun['failed_tests'] + len([testcase.find('failure')
-                                                                        for testcase in test.findall('testcase')
-                                                                        if testcase.findall('failure')])
-                    trun['skipped_tests'] = trun['skipped_tests'] + len([testcase.find('skipped')
-                                                                         for testcase in test.findall('testcase')
-                                                                         if testcase.findall('skipped')])
+                    trun['total_tests'] += len(test.findall('testcase'))
+                    trun['failed_tests'] += len(
+                        [
+                            testcase.find('failure')
+                            for testcase in test.findall('testcase')
+                            if testcase.findall('failure')
+                        ]
+                    )
+
+                    trun['skipped_tests'] += len(
+                        [
+                            testcase.find('skipped')
+                            for testcase in test.findall('testcase')
+                            if testcase.findall('skipped')
+                        ]
+                    )
+
                     trun['passed_tests'] = trun['total_tests'] - trun['failed_tests'] - trun['skipped_tests']
                 individual_res.append({os.path.basename(path): trun})
             else:
@@ -1855,7 +1857,7 @@ def create_aggregate_testrun_results(individual_results):
     failed_tests = 0
     skipped_tests = 0
     passed_tests = 0
-    agg_results = dict()
+    agg_results = {}
 
     for run in individual_results:
         for val in run.values():
@@ -1885,7 +1887,7 @@ def create_testrun_results(artifact_locations, config):
                        files found
      :rtype testruns: dict
      """
-    testruns = dict()
+    testruns = {}
     individual_results = create_individual_testrun_results(artifact_locations, config)
     testruns.update(create_aggregate_testrun_results(individual_results))
     testruns.update(individual_results=individual_results)

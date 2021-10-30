@@ -347,14 +347,13 @@ class Notification(TefloResource):
         :return: validate task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._validate_task_cls,
             'name': str(self.name),
             'resource': self,
             'methods': self._req_tasks_methods,
             "timeout": self._validate_timeout
         }
-        return task
 
     def _construct_notification_task(self):
         """Constructs the notification task associated to the resource.
@@ -362,7 +361,7 @@ class Notification(TefloResource):
         :returns: notification task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._notification_task_cls,
             'name': str(self.name),
             'resource': self,
@@ -370,4 +369,3 @@ class Notification(TefloResource):
             'methods': self._req_tasks_methods,
             "timeout": self._notification_timeout
         }
-        return task

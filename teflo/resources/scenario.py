@@ -90,11 +90,7 @@ class Scenario(TefloResource):
         self._fullpath = ""
         self._inventory: Inventory = inventory_object
         # set the scenario name attribute
-        if not name:
-            self._name = gen_random_str(15)
-        else:
-            self._name = name
-
+        self._name = gen_random_str(15) if not name else name
         # set the scenario description attribute
         self._description = parameters.pop('description', None)
 
@@ -103,14 +99,14 @@ class Scenario(TefloResource):
 
         # set resource attributes
         self._assets = list()
-        self._actions = list()
+        self._actions = []
         self._executes = list()
-        self._reports = list()
-        self._notifications = list()
+        self._reports = []
+        self._notifications = []
         self._yaml_data = dict()
         # Properties to take care of included scenarios
-        self._child_scenarios = list()
-        self._included_scenario_path = list()
+        self._child_scenarios = []
+        self._included_scenario_path = []
 
         # set the teflo task classes for the scenario
         self._validate_task_cls = validate_task_cls
@@ -139,11 +135,8 @@ class Scenario(TefloResource):
         return "Scenario(\"%s\")" % self.name
 
     def get_all_resources(self):
-        all_resources = list()
+        all_resources = list(self.get_assets())
 
-        # The order is like below so we always execute resources in below order for a single scenario node
-
-        all_resources.extend([item for item in self.get_assets()])
         all_resources.extend([item for item in self.get_actions()])
         all_resources.extend([item for item in self.get_executes()])
         all_resources.extend([item for item in self.get_reports()])
@@ -380,13 +373,13 @@ class Scenario(TefloResource):
         :type item: object
         """
         if isinstance(item, Asset):
-            self._assets = list()
+            self._assets = []
         elif isinstance(item, Action):
             self._actions = list()
         elif isinstance(item, Execute):
-            self._executes = list()
+            self._executes = []
         elif isinstance(item, Report):
-            self._reports = list()
+            self._reports = []
         elif isinstance(item, Notification):
             self._notifications = list()
         else:
@@ -411,35 +404,14 @@ class Scenario(TefloResource):
         :type tasks: list
         """
 
-        filtered_task_list = list()
+        filtered_task_list = [
+            (task, self.get_resource_idx(task.get('asset')))
+            for task in tasks
+            if task.get('asset')
+            and getattr(task.get('asset'), 'name') in [h.name for h in self.assets]
+        ]
 
-        # This a brute force way of resolving the out of order of resources when using labels.
-        # Prior to this change we would
-        # 1. filter task list for resource type the scenarios has ownership
-        # 2. filter existing resource list for the other resources of the same type that were filtered out by label
-        # 3. re-init the resource list for the resource type with an empty array
-        # 4. Append the resources that were updated from step 1
-        # 5. Then append the rest of the resources from step 2
-        # This lead to the resources being out of order in the results.yml
-        #
-        # Now we keep track of the index of the original resource so that we know where to replace/insert
-        # the new resources or updated resource in the list. This will support when the resource list is
-        # filtered using labels or status so we can retain proper ordering within the resource list during reload.
-        #
-        # New way
-        # 1. filter task list for scenario resource ownership and it's index location in resource list
-        # 2. if rvalue, then the first new resource will replace the original resource at the original index
-        # 3. if rvalue, for each 1+N rvalue will have the index incremented by 1 and inserted at the new index
-        #    pushing any resource that was at the index down the stack.
-        # 4. if not rvalue, the updated resource will check to see if the original resource is at the previous index
-        #    or at a new index (becaue it's been pushed down the stack) and replace the original resource accordingly.
 
-        # TODO: Simplify the filtering of resources when resources implement __eq__/__hash__
-        filtered_task_list.extend(
-            [(task, self.get_resource_idx(task.get('asset')))
-             for task in tasks if task.get('asset') and getattr(task.get('asset'), 'name')
-             in [h.name for h in self.assets]]
-        )
         filtered_task_list.extend(
             [(task, self.get_resource_idx(task.get('package')))
              for task in tasks if isinstance(task.get('package'), Report) and (getattr(task.get('package'), 'name')
@@ -728,13 +700,12 @@ class Scenario(TefloResource):
         :return: validate task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._validate_task_cls,
             'name': str(self.name),
             'resource': self,
             'methods': self._req_tasks_methods
         }
-        return task
 
     def load_resources(self, res_type, res_list, idx=None):
         """

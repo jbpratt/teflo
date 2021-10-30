@@ -45,14 +45,12 @@ def note_params():
 
 @pytest.fixture(scope='class')
 def note_config_params():
-    params = dict(
+    return dict(
         smtp_port='33',
         smtp_starttl='True',
         smtp_user='joey',
         smtp_password='changeMe123'
     )
-
-    return params
 
 
 class TestEmailNotifier(object):

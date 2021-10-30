@@ -62,8 +62,7 @@ def note(plugin, note_params):
 
 @pytest.fixture(scope='class')
 def note_emitter(note):
-    ne = Notifier(note)
-    return ne
+    return Notifier(note)
 
 
 class TestNotificationEmitter(object):

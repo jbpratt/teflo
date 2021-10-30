@@ -34,8 +34,10 @@ from teflo.exceptions import AnsibleServiceError
 
 @pytest.fixture()
 def script():
-    script = {'name': './scripts/add_two_numbers.sh X=12 X=13', 'creates': './scripts/hello.txt'}
-    return script
+    return {
+        'name': './scripts/add_two_numbers.sh X=12 X=13',
+        'creates': './scripts/hello.txt',
+    }
 
 
 @pytest.fixture()

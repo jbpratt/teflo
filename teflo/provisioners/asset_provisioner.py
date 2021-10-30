@@ -91,8 +91,8 @@ class AssetProvisioner(LoggerMixin, TimeMixin):
                 return
             # If res is greater than one , multiple resources have been provisioned
             if len(res) > 1:
-                res_profile_list = list()
-                for i in range(0, len(res)):
+                res_profile_list = []
+                for i in range(len(res)):
                     # res > 1 when count > 1. This is available when using linchpin plugin, os_client plugin or other
                     # provisioner plugin which supports multiple resources is used.
                     # With linchpin plugin, for beaker and aws resources, linchpin does not return a proper host name
@@ -126,10 +126,22 @@ class AssetProvisioner(LoggerMixin, TimeMixin):
                         host_profile.update(res[i])
                     self.logger.debug(json.dumps(host_profile, indent=4))
                     res_profile_list.append(host_profile)
-                self.logger.info('Successfully provisioned %s asset(s) %s with asset_id(s) %s:'
-                                 % (len(res_profile_list), [res_profile_list[i]['name'] for i in range(0, len(res))],
-                                    [res_profile_list[i]['provider']['asset_id'] if res_profile_list[i].get('provider')
-                                     else res_profile_list[i]['asset_id'] for i in range(0, len(res))]))
+                self.logger.info(
+                    (
+                        'Successfully provisioned %s asset(s) %s with asset_id(s) %s:'
+                        % (
+                            len(res_profile_list),
+                            [res_profile_list[i]['name'] for i in range(len(res))],
+                            [
+                                res_profile_list[i]['provider']['asset_id']
+                                if res_profile_list[i].get('provider')
+                                else res_profile_list[i]['asset_id']
+                                for i in range(len(res))
+                            ],
+                        )
+                    )
+                )
+
                 return res_profile_list
             else:
                 # Single resource has been provisioned

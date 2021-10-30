@@ -149,10 +149,7 @@ class LoggerMixin(object):
                 os.makedirs(log_dir)
         except OSError as ex:
             msg = 'Unable to create %s directory' % log_dir
-            if ex.errno == errno.EACCES:
-                msg += ', permission defined.'
-            else:
-                msg += ', %s.' % ex
+            msg += ', permission defined.' if ex.errno == errno.EACCES else ', %s.' % ex
             raise LoggerMixinError(msg)
 
         full_path = os.path.join(log_dir, 'teflo_scenario.log')
@@ -168,10 +165,7 @@ class LoggerMixin(object):
     class ExceptionFilter(Filter):
 
         def filter(self, record):
-            if record.getMessage().find('Traceback') != -1:
-                return False
-            else:
-                return True
+            return record.getMessage().find('Traceback') == -1
 
 
 class TimeMixin(object):
@@ -499,11 +493,11 @@ class TefloResource(LoggerMixin, TimeMixin):
         # TODO: better if we return a generator
         :return: list of tasks for this class
         """
-        lst = []
-        for name, obj in inspect.getmembers(self, inspect.isclass):
-            if issubclass(obj, TefloTask):
-                lst.append(name)
-        return lst
+        return [
+            name
+            for name, obj in inspect.getmembers(self, inspect.isclass)
+            if issubclass(obj, TefloTask)
+        ]
 
     def load(self, data):
         """
@@ -653,7 +647,7 @@ class TefloProvider(LoggerMixin, TimeMixin):
                 param_value = getattr(resource, 'provider_params')[param]
                 self.logger.info(msg + 'exists.')
 
-                if not type(param_value) in param_type:
+                if type(param_value) not in param_type:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(param_value), param_type))
@@ -680,7 +674,7 @@ class TefloProvider(LoggerMixin, TimeMixin):
                 param_value = getattr(resource, 'provider_params')[param]
                 self.logger.info(msg + 'exists.')
 
-                if not type(param_value) in param_type:
+                if type(param_value) not in param_type:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(param_value), param_type))
@@ -712,7 +706,7 @@ class TefloProvider(LoggerMixin, TimeMixin):
                         'parameters for resource %s' % getattr(resource, 'name')
                     )
 
-                if not type(param_value) in param_type:
+                if type(param_value) not in param_type:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(param_value), param_type)
@@ -746,7 +740,7 @@ class TefloProvider(LoggerMixin, TimeMixin):
                         'Error occurred while validating required provider '
                         'parameters for resource %s' % getattr(resources, 'name')
                     )
-                if not type(param_value) in param_type:
+                if type(param_value) not in param_type:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(param_value), param_type)
@@ -782,7 +776,6 @@ class PhysicalProvider(TefloProvider):
     def __init__(self):
         super(PhysicalProvider, self).__init__()
         """Constructor."""
-        pass
 
 
 class ReportProvider(TefloProvider):
@@ -791,7 +784,6 @@ class ReportProvider(TefloProvider):
     def __init__(self):
         super(ReportProvider, self).__init__()
         """Constructor."""
-        pass
 
 
 class TefloOrchestrator(LoggerMixin, TimeMixin):
@@ -865,7 +857,7 @@ class TefloOrchestrator(LoggerMixin, TimeMixin):
         Get the list of the mandatory parameters
         :return: a tuple of the mandatory parameters.
         """
-        return (param for param in cls._mandatory_parameters_set())
+        return iter(cls._mandatory_parameters_set())
 
     @classmethod
     def _optional_parameters_set(cls):
@@ -881,7 +873,7 @@ class TefloOrchestrator(LoggerMixin, TimeMixin):
         Get the list of the optional parameters
         :return: a tuple of the optional parameters.
         """
-        return (param for param in cls._optional_parameters_set())
+        return iter(cls._optional_parameters_set())
 
     @classmethod
     def _all_parameters_set(cls):
@@ -898,7 +890,7 @@ class TefloOrchestrator(LoggerMixin, TimeMixin):
         Return the list of all possible parameters for the provider.
         :return: a tuple with all parameters
         """
-        return (param for param in cls._all_parameters_set())
+        return iter(cls._all_parameters_set())
 
     @classmethod
     def build_profile(cls, action):
@@ -978,7 +970,7 @@ class TefloExecutor(LoggerMixin, TimeMixin):
         Get the list of the mandatory parameters
         :return: a tuple of the mandatory parameters.
         """
-        return (param for param in cls._mandatory_parameters_set())
+        return iter(cls._mandatory_parameters_set())
 
     @classmethod
     def _optional_parameters_set(cls):
@@ -994,7 +986,7 @@ class TefloExecutor(LoggerMixin, TimeMixin):
         Get the list of the optional parameters
         :return: a tuple of the optional parameters.
         """
-        return (param for param in cls._optional_parameters_set())
+        return iter(cls._optional_parameters_set())
 
     @classmethod
     def _all_parameters_set(cls):
@@ -1011,7 +1003,7 @@ class TefloExecutor(LoggerMixin, TimeMixin):
         Return the list of all possible parameters for the provider.
         :return: a tuple with all parameters
         """
-        return (param for param in cls._all_parameters_set())
+        return iter(cls._all_parameters_set())
 
     @classmethod
     def get_execute_types(cls):
@@ -1243,10 +1235,12 @@ class ImporterPlugin(TefloPlugin):
         # build the config params that might be useful to plugin and instantiate
         if report.do_import:
             plugin_name = getattr(self.report, 'importer_plugin').__plugin_name__
-            config_params = dict()
-            for k, v in self.config.items():
-                if plugin_name.upper() in k:
-                    config_params[k.lower()] = v
+            config_params = {
+                k.lower(): v
+                for k, v in self.config.items()
+                if plugin_name.upper() in k
+            }
+
             self.config_params = config_params
         else:
             self.config_params = {}
@@ -1399,7 +1393,7 @@ class NotificationPlugin(TefloPlugin):
 
     def get_credential_params(self):
 
-        crd = dict()
+        crd = {}
 
         if getattr(self.notification, 'credential'):
             for item in self.config['CREDENTIALS']:
@@ -1411,7 +1405,7 @@ class NotificationPlugin(TefloPlugin):
 
     def get_config_params(self):
 
-        cfg = dict()
+        cfg = {}
         for item in self.config['NOTIFICATIONS']:
             if item['name'] == getattr(self.notification, 'notifier').__plugin_name__:
                 cfg = item
@@ -1522,12 +1516,9 @@ class Inventory(LoggerMixin, FileLockMixin, SingletonMixin):
                 if hasattr(host, 'groups') or hasattr(host, 'ip_address'):
                     for sect in getattr(host, 'groups', []):
                         host_section = sect + ":children"
-                        if host_section in config.sections():
-                            config.set(host_section, host.name)
-                        else:
+                        if host_section not in config.sections():
                             config.add_section(host_section)
-                            config.set(host_section, host.name)
-
+                        config.set(host_section, host.name)
                     # create section(s)
                     for item in [section, section_vars]:
                         config.add_section(item)
@@ -1570,10 +1561,7 @@ class Inventory(LoggerMixin, FileLockMixin, SingletonMixin):
             cfg_str += '[' + section.strip() + ']' + '\n'
             new_section = False
             for k, v in parser.items(section):
-                if v:
-                    cfg_str += k + '=' + v
-                else:
-                    cfg_str += k
+                cfg_str += k + '=' + v if v else k
                 cfg_str += '\n'
             new_section = True
         self.logger.debug('\n' + cfg_str)

@@ -43,8 +43,7 @@ def plugin():
 
 @pytest.fixture
 def action_orchestrator(action_resource):
-    action_orchestrator = ActionOrchestrator(action_resource)
-    return action_orchestrator
+    return ActionOrchestrator(action_resource)
 
 
 class TestActionOrchestrator(object):

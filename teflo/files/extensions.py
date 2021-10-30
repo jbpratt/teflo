@@ -65,24 +65,19 @@ def valid_asset_provider_params(value, rule_obj, path):
     provisioner = value['provisioner']
     provider = value['provider']
     if provider['name'] in PROVISIONERS:
-        if provisioner:
-            for plugins in PROVISIONERS[provider]:
-                if isinstance(plugins, list):
-                    for plugin in plugins:
-                        if plugin != provisioner:
-                            continue
-                        else:
-                            plugin.validate(provider)
-                            break
-                else:
-                    plugins.validate(provider)
-        else:
-            for plugins in PROVISIONERS[provider]:
-                if isinstance(plugins, list):
-                    for plugin in plugins:
-                        if plugin.startswith(provider['name']):
-                            plugin.validate(provider)
-                            break
-                else:
-                    plugins.validate(provider)
+        for plugins in PROVISIONERS[provider]:
+            if isinstance(plugins, list):
+                for plugin in plugins:
+                    if provisioner and plugin != provisioner:
+                        continue
+                    elif (
+                        provisioner
+                        and plugin == provisioner
+                        or not provisioner
+                        and plugin.startswith(provider['name'])
+                    ):
+                        plugin.validate(provider)
+                        break
+            else:
+                plugins.validate(provider)
     return True

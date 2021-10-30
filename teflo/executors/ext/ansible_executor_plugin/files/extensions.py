@@ -27,13 +27,9 @@
 
 def valid_execute_types(value, rule_obj, path):
     """ Verify if only one execute type is set for a execute task"""
-    match = list()
-
     types = ['script', 'playbook', 'shell']
 
-    for item in types:
-        if item in value.keys() and value[item]:
-            match.append(item)
+    match = [item for item in types if item in value.keys() and value[item]]
 
     if match.__len__() > 1:
         raise AssertionError(

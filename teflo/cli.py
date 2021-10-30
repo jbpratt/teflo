@@ -260,11 +260,7 @@ def run(ctx, task, scenario, log_level, data_folder, workspace, vars_data, label
     cbn.load_from_yaml(scenario_graph)
 
     # Setup the list of tasks to run
-    if not task:
-        task = TASKLIST
-    else:
-        task = list(task)
-
+    task = TASKLIST if not task else list(task)
     # The scenario will start the main pipeline and run through the task
     # pipelines declared. See :function:`~teflo.Teflo.run` for more details.
     cbn.run(tasklist=task)

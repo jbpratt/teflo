@@ -38,11 +38,7 @@ from teflo.exceptions import TefloImporterError
 
 @pytest.fixture(scope='class')
 def artifact_locations():
-    artifacts = {}
-    artifacts['artifacts/host01'] = ['test.xml']
-    artifacts['artifacts/host02'] = ['sample2.xml']
-
-    return artifacts
+    return {'artifacts/host01': ['test.xml'], 'artifacts/host02': ['sample2.xml']}
 
 
 @pytest.fixture(scope='class')
@@ -64,21 +60,23 @@ def execute(artifact_locations):
 
 @pytest.fixture(scope='class')
 def default_report_params(execute):
-    params = dict(description='description', executes=[execute],
+    return dict(description='description', executes=[execute],
                   provider=dict(name='polarion',
                                 credential='polarion'
                                 ))
-    return params
 
 
 @pytest.fixture(scope='class')
 def default_profile_params():
-    params = dict(data_folder='/tmp/.results',
-                  workspace='/tmp',
-                  provider_credentials = dict(polarion_url='https://test.com/polarion',
-                                              username='testuser',
-                                              password='testpassword'))
-    return params
+    return dict(
+        data_folder='/tmp/.results',
+        workspace='/tmp',
+        provider_credentials=dict(
+            polarion_url='https://test.com/polarion',
+            username='testuser',
+            password='testpassword',
+        ),
+    )
 
 
 @pytest.fixture(scope='class')
@@ -108,8 +106,7 @@ def report(default_report_params, plugin, report_config,
 
 @pytest.fixture(scope='class')
 def artifact_importer(report):
-    importer = ArtifactImporter(report)
-    return importer
+    return ArtifactImporter(report)
 
 
 class TestArtifactImporter(object):

@@ -83,10 +83,9 @@ def data_injector():
 def task_host(task_concurrency_config):
     params = dict(groups='test_group',
                   ip_address='1.2.3.4')
-    host = Asset(name='Host01',
+    return Asset(name='Host01',
                  config=task_concurrency_config,
                  parameters=params)
-    return host
 
 
 @pytest.fixture(scope='class')
@@ -124,20 +123,23 @@ def aws_creds():
 
 @pytest.fixture(scope='class')
 def data_folder():
-    data_folder = '/tmp/.results'
     os.system('mkdir /tmp/1 /tmp/.results /tmp/.results/artifacts /tmp/.results/logs '
               '/tmp/.results/artifacts/localhosts '
               '/tmp/.results/artifacts/localhosts/payload_eg '
               '/tmp/.results/artifacts/localhosts/payload_eg/results')
     os.system('touch /tmp/.results/artifacts/localhosts/payload_eg/results/junit_example.xml '
               '/tmp/.results/junit2.xml /tmp/.results/junit3.xml')
-    return data_folder
+    return '/tmp/.results'
 
 
 @pytest.fixture(scope='class')
 def teflo1():
-    teflo = Teflo(data_folder='/tmp', workspace='/tmp', labels=('label1', 'label2'), skip_notify=('note01',))
-    return teflo
+    return Teflo(
+        data_folder='/tmp',
+        workspace='/tmp',
+        labels=('label1', 'label2'),
+        skip_notify=('note01',),
+    )
 
 
 class TestDataInjector(object):

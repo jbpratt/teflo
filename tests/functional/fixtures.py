@@ -177,8 +177,9 @@ def notification_on_demand_resource(default_note_params, config):
 @pytest.fixture
 def basic_scenario_graph_with_provision_only(config):
     config['WORKSPACE'] = '../assets/scenario_graph_basic_test/'
-    scenario_graph = validate_render_scenario('../assets/scenario_graph_basic_test/sdf0.yml', config)
-    return scenario_graph
+    return validate_render_scenario(
+        '../assets/scenario_graph_basic_test/sdf0.yml', config
+    )
 
 
 @pytest.fixture

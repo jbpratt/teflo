@@ -35,22 +35,20 @@ from teflo.provisioners import AssetProvisioner
 
 @pytest.fixture(scope='class')
 def default_host_params():
-    params = dict(description='description',
+    return dict(description='description',
                   provider=dict(name='openstack',
                                 credential='openstack'
                                 ))
-    return params
 
 @pytest.fixture(scope='class')
 def default_no_provider_host_params():
-    params = dict(description='description',
+    return dict(description='description',
                   provisioner='openstack-libcloud')
-    return params
 
 
 @pytest.fixture(scope='class')
 def default_profile_params():
-    params = dict(data_folder='/tmp/.results',
+    return dict(data_folder='/tmp/.results',
                   workspace='/tmp',
                   provider=dict(name='openstack',
                                 credential='openstack'
@@ -58,16 +56,14 @@ def default_profile_params():
                   name='dummy',
                   ip_address='',
                   )
-    return params
 
 @pytest.fixture(scope='class')
 def default_no_provider_profile_params():
-    params = dict(data_folder='/tmp/.results',
+    return dict(data_folder='/tmp/.results',
                   workspace='/tmp',
                   name='dummy',
                   ip_address='',
                   )
-    return params
 
 
 @pytest.fixture(scope='class')
@@ -93,8 +89,7 @@ def host(plugin, default_host_params):
 
 @pytest.fixture(scope='class')
 def host_provisioner(host):
-    hp = AssetProvisioner(host)
-    return hp
+    return AssetProvisioner(host)
 
 
 class TestAssetProvisioner(object):

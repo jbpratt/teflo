@@ -132,14 +132,13 @@ class Execute(TefloResource):
 
         # using plugin's method to get the schema keys and check if they are present in the parameters and then
         # set them as executor's parameters
-        if self.executor:
-            for p in getattr(self.executor, 'get_schema_keys')():
-                if parameters.get(p, None):
-                    setattr(self, p, parameters.get(p))
-        else:
+        if not self.executor:
             raise TefloExecuteError('Executor: %s plugin was not found!' %
                                      executor_name)
 
+        for p in getattr(self.executor, 'get_schema_keys')():
+            if parameters.get(p, None):
+                setattr(self, p, parameters.get(p))
         self.hosts = parameters.pop('hosts')
         if self.hosts is None:
             raise TefloExecuteError('Unable to associate hosts to executor:'
@@ -156,13 +155,12 @@ class Execute(TefloResource):
         self._status = parameters.pop('status', 0)
 
         self.artifacts = parameters.pop('artifacts', [])
-        if self.artifacts:
-            if isinstance(self.artifacts, string_types):
-                self.artifacts = self.artifacts.replace(' ', '').split(',')
+        if self.artifacts and isinstance(self.artifacts, string_types):
+            self.artifacts = self.artifacts.replace(' ', '').split(',')
 
         self.artifact_locations = parameters.pop('artifact_locations', [])
 
-        self.testrun_results = dict()
+        self.testrun_results = {}
 
         # set the teflo task classes for the resource
         self._validate_task_cls = validate_task_cls
@@ -241,14 +239,13 @@ class Execute(TefloResource):
         :return: validate task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._validate_task_cls,
             'name': str(self.name),
             'resource': self,
             'methods': self._req_tasks_methods,
             "timeout": self._validate_timeout
         }
-        return task
 
     def _construct_execute_task(self):
         """Constructs the execute task associated to the execute resource.
@@ -256,7 +253,7 @@ class Execute(TefloResource):
         :return: execute task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._execute_task_cls,
             'name': str(self.name),
             'package': self,
@@ -264,4 +261,3 @@ class Execute(TefloResource):
             'methods': self._req_tasks_methods,
             "timout": self._execute_timeout
         }
-        return task

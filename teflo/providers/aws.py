@@ -303,7 +303,7 @@ class AwsProvider(TefloProvider):
                 param_value = provider_params[param]
                 self.logger.info(msg + 'exists.')
 
-                if not type(param_value) in param_type:
+                if type(param_value) not in param_type:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(param_value), param_type))
@@ -350,7 +350,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -372,7 +372,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -392,7 +392,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -414,7 +414,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -434,7 +434,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -456,7 +456,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -476,7 +476,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -498,7 +498,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -518,7 +518,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -540,7 +540,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -560,7 +560,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -582,7 +582,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -602,7 +602,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -624,7 +624,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -644,7 +644,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -666,7 +666,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -686,7 +686,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -708,7 +708,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -728,7 +728,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -750,7 +750,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -770,7 +770,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -792,7 +792,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -812,7 +812,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -834,7 +834,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -854,7 +854,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -876,7 +876,7 @@ class AwsProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))

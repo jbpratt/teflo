@@ -223,7 +223,7 @@ class OpenstackLibCloudProvisionerPlugin(ProvisionerPlugin):
 
         # filter sizes
         by_name = list(filter(lambda elm: elm.name == name, _sizes))
-        by_id = list()
+        by_id = []
         for size in _sizes:
             try:
                 if name == int(size.id):
@@ -257,7 +257,7 @@ class OpenstackLibCloudProvisionerPlugin(ProvisionerPlugin):
         _networks = self.networks
 
         # filter networks
-        nets = list()
+        nets = []
         if isinstance(name, string_types):
             nets = list(filter(lambda elm: elm.name == name, _networks))
         elif isinstance(name, list):
@@ -267,7 +267,7 @@ class OpenstackLibCloudProvisionerPlugin(ProvisionerPlugin):
                     nets.append(data)
 
         # process results
-        if len(nets) == 0:
+        if not nets:
             raise OpenstackProviderError('Network(s) %s not found!' % name)
         else:
             return nets[0]
@@ -288,7 +288,7 @@ class OpenstackLibCloudProvisionerPlugin(ProvisionerPlugin):
         data = list(filter(lambda elm: elm.name == name, self.nodes))
 
         # process results
-        if len(data) == 0:
+        if not data:
             raise OpenstackProviderError('Node %s not found!' % name)
         else:
             return data[0]
@@ -310,7 +310,7 @@ class OpenstackLibCloudProvisionerPlugin(ProvisionerPlugin):
                            self.floating_ip_pools))
 
         # process results
-        if len(data) == 0:
+        if not data:
             raise OpenstackProviderError('FIP %s not found!' % name)
         else:
             return data[0]
@@ -331,7 +331,7 @@ class OpenstackLibCloudProvisionerPlugin(ProvisionerPlugin):
         data = list(filter(lambda elm: elm.name == name, self.key_pairs))
 
         # process results
-        if len(data) == 0:
+        if not data:
             raise OpenstackProviderError('Keypair %s not found!' % name)
         else:
             return data[0]

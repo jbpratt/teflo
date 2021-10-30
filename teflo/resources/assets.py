@@ -214,11 +214,10 @@ class Asset(TefloResource):
                 except KeyError:
                     raise TefloResourceError('Specified provider is not supported by a provisioner.')
             elif provisioner_name:
-                found_name = False
-                for name in get_provisioners_plugins_list():
-                    if name.startswith(provisioner_name):
-                        found_name = True
-                        break
+                found_name = any(
+                    name.startswith(provisioner_name)
+                    for name in get_provisioners_plugins_list()
+                )
 
                 if found_name:
                     if self.has_provider and \
@@ -545,14 +544,13 @@ class Asset(TefloResource):
         :return: validate task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._validate_task_cls,
             'name': str(self.name),
             'resource': self,
             'methods': self._req_tasks_methods,
             "timeout": self._validate_timeout
         }
-        return task
 
     def _construct_provision_task(self):
         """Setup the provision task data structure.
@@ -560,7 +558,7 @@ class Asset(TefloResource):
         :return: provision task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._provision_task_cls,
             'name': str(self.name),
             'asset': self,
@@ -568,7 +566,6 @@ class Asset(TefloResource):
             'methods': self._req_tasks_methods,
             "timeout": self._provision_timeout
         }
-        return task
 
     def _construct_cleanup_task(self):
         """Setup the cleanup task data structure.
@@ -576,7 +573,7 @@ class Asset(TefloResource):
         :return: cleanup task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._cleanup_task_cls,
             'name': str(self.name),
             'asset': self,
@@ -584,4 +581,3 @@ class Asset(TefloResource):
             'methods': self._req_tasks_methods,
             "timeout": self._cleanup_timeout
         }
-        return task

@@ -116,7 +116,7 @@ class OpenstackProvider(CloudProvider):
                 param_value = params[param]
                 self.logger.info(msg + 'exists.')
 
-                if not type(param_value) in param_type:
+                if type(param_value) not in param_type:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(param_value), param_type))
@@ -140,7 +140,7 @@ class OpenstackProvider(CloudProvider):
                 else:
                     self.logger.info(msg + 'exists.')
 
-                if not type(param_value) in param_type:
+                if type(param_value) not in param_type:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(param_value), param_type))
@@ -160,21 +160,19 @@ class OpenstackProvider(CloudProvider):
                     self.logger.warning(
                         msg + 'is forward compatible with the linchpin provisioner. It will be translated '
                               'to be in proper format for linchpin.')
-                    if not type(param_value) in param_type:
+                    if type(param_value) not in param_type:
                         self.logger.warning(
                             '    - Type=%s, Optional Type=%s. (WARNING)' %
                             (type(param_value), param_type))
                 else:
                     self.logger.info(msg + 'exists.')
 
-                if 'linchpin' in provisioner_name:
-                    if not type(param_value) in param_type:
+                if type(param_value) not in param_type:
+                    if 'linchpin' in provisioner_name:
                         self.logger.warning(
                             '    - Type=%s, Optional Type=%s. (WARNING)' %
                             (type(param_value), param_type))
-                else:
-
-                    if not type(param_value) in param_type:
+                    else:
                         self.logger.error(
                             '    - Type=%s, Optional Type=%s. (ERROR)' %
                             (type(param_value), param_type))
@@ -188,15 +186,15 @@ class OpenstackProvider(CloudProvider):
 
     def validate_opt_linchpin_params(self, resource_name, provisioner_name, params):
 
-        if 'linchpin' in provisioner_name:
-            for item in self.linchpin_only_opt_params:
-                param, param_type = item[0], item[1]
+        for item in self.linchpin_only_opt_params:
+            param, param_type = item[0], item[1]
+            if 'linchpin' in provisioner_name:
                 msg = "Resource %s : optional param '%s' " % (resource_name, param)
                 try:
                     param_value = params[param]
                     self.logger.info(msg + 'exists.')
 
-                    if not type(param_value) in param_type:
+                    if type(param_value) not in param_type:
                         self.logger.error(
                             '    - Type=%s, Optional Type=%s. (ERROR)' %
                             (type(param_value), param_type))
@@ -206,9 +204,7 @@ class OpenstackProvider(CloudProvider):
                         )
                 except KeyError:
                     self.logger.warning(msg + 'is undefined for resource.')
-        else:
-            for item in self.linchpin_only_opt_params:
-                param, param_type = item[0], item[1]
+            else:
                 msg = "Resource %s : optional param '%s' is " \
                       "not support by the openstack-libcloud provisioner" % (resource_name, param)
                 try:

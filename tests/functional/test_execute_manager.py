@@ -48,8 +48,7 @@ def plugin():
 
 @pytest.fixture
 def execute_manager(execute_resource):
-    execute_manager = ExecuteManager(execute_resource)
-    return execute_manager
+    return ExecuteManager(execute_resource)
 
 
 class TestExecuteManager(object):

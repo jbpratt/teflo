@@ -153,7 +153,10 @@ class TestResourceChecker(object):
     def test_check_custom_resource_service1(resource_checker4):
         with pytest.raises(TefloError) as ex:
             resource_checker4.validate_resources()
-        assert not 'will not be run! Not all external resources are available or valid' in ex.value.args[0]
+        assert (
+            'will not be run! Not all external resources are available or valid'
+            not in ex.value.args[0]
+        )
 
 
     @staticmethod

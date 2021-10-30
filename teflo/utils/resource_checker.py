@@ -119,8 +119,8 @@ class ResourceChecker(object):
         LOG.info(' DEPENDENCY CHECK '.center(64, '-'))
         comp_valid = True
         all_valid = True
+        comp_valid = True
         for comp in component_names:
-            comp_valid = True
             # TODO Add the default proxy server link here for statuspage.io
             statuspage = StatusPageHelper(proxyserver_url=self.config["RESOURCE_CHECK_ENDPOINT"])
             for attempts in range(1, 6):
@@ -129,8 +129,7 @@ class ResourceChecker(object):
                 if service_entry is None:
                     LOG.info('{:>40} {:<9} - Can\'t Find Service{}'.format(
                             comp.upper(), 'From Database', attempts))
-                    comp_valid = False
-                    all_valid = comp_valid and all_valid
+                    all_valid = False and all_valid
                 else:
                     LOG.info('{:>40} {:<9} - Attempts {}'.format(
                         comp.upper(), ': UP' if service_entry.get("status") == "operational" else ': DOWN', attempts))
@@ -186,7 +185,7 @@ class ResourceChecker(object):
                             break
                     else:
                         comp_resource_invalid = True
-                if comp_resource_avail is not True or comp_resource_invalid is True:
+                if not comp_resource_avail or comp_resource_invalid:
                     ext_resources_avail = False
                 if comp_resource_invalid:
                     LOG.info('{:>40} {:<9} - Attempts {}'.format(
@@ -197,7 +196,7 @@ class ResourceChecker(object):
             warnings.resetwarnings()
             LOG.info(''.center(64, '-'))
 
-            if ext_resources_avail is not True:
+            if not ext_resources_avail:
                 LOG.error("ERROR: Not all external resources are available or valid. Not running scenario")
                 raise TefloError('Scenario %s will not be run! Not all external resources are available or valid' %
                                   getattr(self.scenario, 'name'))

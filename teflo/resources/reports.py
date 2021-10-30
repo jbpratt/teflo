@@ -337,14 +337,13 @@ class Report(TefloResource):
         :return: validate task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._validate_task_cls,
             'name': str(self.name),
             'resource': self,
             'methods': self._req_tasks_methods,
             "timeout": self._validate_timeout
         }
-        return task
 
     def _construct_report_task(self):
         """Constructs the report task associated to the report resource.
@@ -352,7 +351,7 @@ class Report(TefloResource):
         :return: report task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._report_task_cls,
             'name': str(self.name),
             'package': self,
@@ -360,4 +359,3 @@ class Report(TefloResource):
             'methods': self._req_tasks_methods,
             "timeout": self._report_timeout
         }
-        return task

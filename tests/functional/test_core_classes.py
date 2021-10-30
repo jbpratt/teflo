@@ -96,7 +96,7 @@ def teflo_plugin():
 
 @pytest.fixture(scope='class')
 def report_profile():
-    profile = dict(name='test.xml',
+    return dict(name='test.xml',
                    description='testing',
                    importer='polarion',
                    data_folder='/tmp',
@@ -105,7 +105,6 @@ def report_profile():
                    provider_credentials={},
                    config_params={},
                    provider={'name': 'test'})
-    return profile
 
 
 @pytest.fixture
@@ -185,8 +184,7 @@ def inv_host(default_host_params, config):
 @pytest.fixture
 def inventory(inv_host):
     inv_host.config['INVENTORY_FOLDER'] = '/tmp/.results/inventory'
-    inventory = Inventory(inv_host.config, 'xyz')
-    return inventory
+    return Inventory(inv_host.config, 'xyz')
 
 
 @pytest.fixture

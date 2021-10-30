@@ -181,7 +181,7 @@ class BeakerProvider(PhysicalProvider):
                 param_value = params[param]
                 self.logger.info(msg + 'exists.')
 
-                if not type(param_value) in param_type:
+                if type(param_value) not in param_type:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(param_value), param_type))
@@ -270,7 +270,7 @@ class BeakerProvider(PhysicalProvider):
                     raise TefloProviderError(err_msg)
                 self.logger.info(msg + 'exists.')
 
-                if not type(param_value) in param_type:
+                if type(param_value) not in param_type:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(param_value), param_type))
@@ -293,24 +293,30 @@ class BeakerProvider(PhysicalProvider):
                                               'with the linchpin provisioner. It will be translated '
                                               'to be in proper format for linchpin.')
                     for lp, lt in self.linchpin_comm_opt_params:
-                        if all('post' in p for p in [lp, param]):
-                            if not type(param_value) in lt:
-                                self.logger.warning(
-                                    '    - Type=%s, Optional Type=%s. (WARNING)' %
-                                    (type(param_value), lt))
-                        if all('tag' in p for p in [lp, param]):
-                            if not type(param_value) in lt:
-                                self.logger.warning(
-                                    '    - Type=%s, Optional Type=%s. (WARNING)' %
-                                    (type(param_value), lt))
-                        if all('values' in p for p in [lp, param]):
-                            if not type(param_value) in lt:
-                                self.logger.warning(
-                                    '    - Type=%s, Optional Type=%s. (WARNING)' %
-                                    (type(param_value), lt))
+                        if (
+                            all('post' in p for p in [lp, param])
+                            and type(param_value) not in lt
+                        ):
+                            self.logger.warning(
+                                '    - Type=%s, Optional Type=%s. (WARNING)' %
+                                (type(param_value), lt))
+                        if (
+                            all('tag' in p for p in [lp, param])
+                            and type(param_value) not in lt
+                        ):
+                            self.logger.warning(
+                                '    - Type=%s, Optional Type=%s. (WARNING)' %
+                                (type(param_value), lt))
+                        if (
+                            all('values' in p for p in [lp, param])
+                            and type(param_value) not in lt
+                        ):
+                            self.logger.warning(
+                                '    - Type=%s, Optional Type=%s. (WARNING)' %
+                                (type(param_value), lt))
                 else:
                     self.logger.info(msg + 'exists.')
-                    if not type(param_value) in param_type:
+                    if type(param_value) not in param_type:
                         self.logger.error(
                             '    - Type=%s, Optional Type=%s. (ERROR)' %
                             (type(param_value), param_type))
@@ -324,15 +330,15 @@ class BeakerProvider(PhysicalProvider):
 
     def validate_opt_linchpin_params(self, resource_name, provisioner_name, params):
 
-        if 'linchpin' in provisioner_name:
-            for item in self.linchpin_only_opt_params:
-                param, param_type = item[0], item[1]
+        for item in self.linchpin_only_opt_params:
+            param, param_type = item[0], item[1]
+            if 'linchpin' in provisioner_name:
                 msg = "Resource %s : optional param '%s' " % (resource_name, param)
                 try:
                     param_value = params[param]
                     self.logger.info(msg + 'exists.')
 
-                    if not type(param_value) in param_type:
+                    if type(param_value) not in param_type:
                         self.logger.error(
                             '    - Type=%s, Optional Type=%s. (ERROR)' %
                             (type(param_value), param_type))
@@ -342,9 +348,7 @@ class BeakerProvider(PhysicalProvider):
                         )
                 except KeyError:
                     self.logger.warning(msg + 'is undefined for resource.')
-        else:
-            for item in self.linchpin_only_opt_params:
-                param, param_type = item[0], item[1]
+            else:
                 msg = "Resource %s : optional param '%s' is " \
                       "not support by the bkr-client provisioner" % (resource_name, param)
                 try:
@@ -355,15 +359,15 @@ class BeakerProvider(PhysicalProvider):
 
     def validate_opt_teflo_params(self, resource_name, provisioner_name, params):
 
-        if 'linchpin' not in provisioner_name:
-            for item in self.teflo_only_opt_params:
-                param, param_type = item[0], item[1]
+        for item in self.teflo_only_opt_params:
+            param, param_type = item[0], item[1]
+            if 'linchpin' not in provisioner_name:
                 msg = "Resource %s : optional param '%s' " % (resource_name, param)
                 try:
                     param_value = params[param]
                     self.logger.info(msg + 'exists.')
 
-                    if not type(param_value) in param_type:
+                    if type(param_value) not in param_type:
                         self.logger.error(
                             '    - Type=%s, Optional Type=%s. (ERROR)' %
                             (type(param_value), param_type))
@@ -373,9 +377,7 @@ class BeakerProvider(PhysicalProvider):
                         )
                 except KeyError:
                     self.logger.warning(msg + 'is undefined for resource.')
-        else:
-            for item in self.teflo_only_opt_params:
-                param, param_type = item[0], item[1]
+            else:
                 msg = "Resource %s : optional param '%s' is " \
                       "not support by the linchpin-wrapper provisioner" % (resource_name, param)
                 try:

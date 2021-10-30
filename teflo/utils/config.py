@@ -62,21 +62,19 @@ class Config(dict):
 
     def __set_credentials__(self, **kwargs):
         """Set the credentials configuration settings."""
-        if not kwargs.get("parser"):
-            parser = self.parser
-        else:
-            parser = kwargs["parser"]
+        parser = self.parser if not kwargs.get("parser") else kwargs["parser"]
         credentials = []
 
         for section in getattr(parser, '_sections'):
             if not section.startswith('credentials'):
                 continue
 
-            _credentials = {}
+            _credentials = {
+                option: parser.get(section, option)
+                for option in parser.options(section)
+            }
 
-            for option in parser.options(section):
-                _credentials[option] = \
-                    parser.get(section, option)
+
             _credentials['name'] = section.split(':')[-1]
             credentials.append(_credentials)
 
@@ -181,11 +179,12 @@ class Config(dict):
             if not section.startswith('notifier'):
                 continue
 
-            _notifications = {}
+            _notifications = {
+                option: self.parser.get(section, option)
+                for option in self.parser.options(section)
+            }
 
-            for option in self.parser.options(section):
-                _notifications[option] = \
-                    self.parser.get(section, option)
+
             _notifications['name'] = section.split(':')[-1]
             notifications.append(_notifications)
 
@@ -199,11 +198,12 @@ class Config(dict):
             if not section.startswith('provisioner'):
                 continue
 
-            _provisioner_options = {}
+            _provisioner_options = {
+                option: self.parser.get(section, option)
+                for option in self.parser.options(section)
+            }
 
-            for option in self.parser.options(section):
-                _provisioner_options[option] = \
-                    self.parser.get(section, option)
+
             _provisioner_options['name'] = section.split(':')[-1]
             provisioner_options.append(_provisioner_options)
 

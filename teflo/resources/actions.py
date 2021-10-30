@@ -153,14 +153,13 @@ class Action(TefloResource):
 
         # using plugin's method to get the schema keys and check if they are present in the parameters and then
         # set them as action's parameters
-        if self.orchestrator:
-            for p in getattr(self.orchestrator, 'get_schema_keys')():
-                if parameters.get(p, None):
-                    setattr(self, p, parameters.get(p))
-        else:
+        if not self.orchestrator:
             raise TefloActionError('Orchestrator: %s plugin was not found!' %
                                     orchestrator_name)
 
+        for p in getattr(self.orchestrator, 'get_schema_keys')():
+            if parameters.get(p, None):
+                setattr(self, p, parameters.get(p))
         # set up status code
         self._status = parameters.pop('status', 0)
 
@@ -258,14 +257,13 @@ class Action(TefloResource):
         :returns: validate task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._validate_task_cls,
             'name': str(self.name),
             'resource': self,
             'methods': self._req_tasks_methods,
             'timeout': self._validate_timeout
         }
-        return task
 
     def _construct_orchestrate_task(self):
         """Constructs the orchestrate task associated to the action.
@@ -273,7 +271,7 @@ class Action(TefloResource):
         :return: orchestrate task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._orchestrate_task_cls,
             'name': str(self.name),
             'package': self,
@@ -282,7 +280,6 @@ class Action(TefloResource):
             'methods': self._req_tasks_methods,
             "time_out": self._orchestrate_timeout
         }
-        return task
 
     def _construct_cleanup_task(self):
         """Constructs the clean up task associated to the action.
@@ -290,7 +287,7 @@ class Action(TefloResource):
         :return: clean up task definition
         :rtype: dict
         """
-        task = {
+        return {
             'task': self._cleanup_task_cls,
             'name': str(self.name),
             'package': self,
@@ -300,4 +297,3 @@ class Action(TefloResource):
             "timeout": self._cleanup_timeout
 
         }
-        return task

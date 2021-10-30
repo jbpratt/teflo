@@ -144,7 +144,7 @@ class LibvirtProvider(TefloProvider):
                 self.logger.info(msg + 'exists.')
                 found_req_param = True
 
-                if not type(param_value) in param_type:
+                if type(param_value) not in param_type:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(param_value), param_type))
@@ -203,7 +203,7 @@ class LibvirtProvider(TefloProvider):
 
             try:
                 val = param_value[rnp]
-                if not type(val) in rnt:
+                if type(val) not in rnt:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rnt))
@@ -225,7 +225,7 @@ class LibvirtProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -245,7 +245,7 @@ class LibvirtProvider(TefloProvider):
 
             try:
                 val = param_value[onp]
-                if not type(val) in ont:
+                if type(val) not in ont:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ont))
@@ -265,7 +265,7 @@ class LibvirtProvider(TefloProvider):
 
             try:
                 val = param_value[rsp]
-                if not type(val) in rst:
+                if type(val) not in rst:
                     self.logger.error(
                         '    - Type=%s, Required Type=%s. (ERROR)' %
                         (type(val), rst))
@@ -287,7 +287,7 @@ class LibvirtProvider(TefloProvider):
 
             try:
                 val = param_value[osp]
-                if not type(val) in ost:
+                if type(val) not in ost:
                     self.logger.error(
                         '    - Type=%s, Optional Type=%s. (ERROR)' %
                         (type(val), ost))

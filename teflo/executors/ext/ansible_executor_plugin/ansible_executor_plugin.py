@@ -107,20 +107,20 @@ class AnsibleExecutorPlugin(ExecutorPlugin):
             elif "valid_rc" in shell and shell['valid_rc']:
                 validrc = shell['valid_rc']
 
-            if ignorerc:
+            if (
+                not ignorerc
+                and validrc
+                and result['rc'] not in validrc
+                or not ignorerc
+                and not validrc
+                and result['rc'] != 0
+            ):
+                self.status = 1
+                self.logger.error('Command %s failed. Host=%s rc=%d Error: %s'
+                                  % (shell['command'], result['host'], result['rc'], result['err']))
+
+            elif (ignorerc or not validrc) and ignorerc:
                 self.logger.info("Ignoring the rc for: %s" % shell['command'])
-
-            elif validrc:
-                if result['rc'] not in validrc:
-                    self.status = 1
-                    self.logger.error('Command %s failed. Host=%s rc=%d Error: %s'
-                                      % (shell['command'], result['host'], result['rc'], result['err']))
-
-            else:
-                if result['rc'] != 0:
-                    self.status = 1
-                    self.logger.error('Command %s failed. Host=%s rc=%d Error: %s'
-                                      % (shell['command'], result['host'], result['rc'], result['err']))
 
             if self.status == 1:
                 raise ArchiveArtifactsError('Command %s failed to run ' % shell['name'])
@@ -141,20 +141,20 @@ class AnsibleExecutorPlugin(ExecutorPlugin):
             elif "valid_rc" in script and script['valid_rc']:
                 validrc = script['valid_rc']
 
-            if ignorerc:
+            if (
+                not ignorerc
+                and validrc
+                and result['rc'] not in validrc
+                or not ignorerc
+                and not validrc
+                and result['rc'] != 0
+            ):
+                self.status = 1
+                self.logger.error('Script %s failed. Host=%s rc=%d Error: %s'
+                                  % (script['name'], result['host'], result['rc'], result['err']))
+            elif (ignorerc or not validrc) and ignorerc:
                 self.logger.info("Ignoring the rc for: %s" % script['name'])
 
-            elif validrc:
-
-                if result['rc'] not in validrc:
-                    self.status = 1
-                    self.logger.error('Script %s failed. Host=%s rc=%d Error: %s'
-                                      % (script['name'], result['host'], result['rc'], result['err']))
-            else:
-                if result['rc'] != 0:
-                    self.status = 1
-                    self.logger.error('Script %s failed. Host=%s rc=%d Error: %s'
-                                      % (script['name'], result['host'], result['rc'], result['err']))
             if self.status == 1:
                 raise ArchiveArtifactsError('Script %s failed to run' % script['name'])
             else:
@@ -204,7 +204,7 @@ class AnsibleExecutorPlugin(ExecutorPlugin):
 
         self.logger.info('Fetching test artifacts @ %s' % destination)
 
-        artifact_location = list()
+        artifact_location = []
 
         # settings required by synchronize module
         os.environ['ANSIBLE_LOCAL_TEMP'] = '$HOME/.ansible/tmp'
@@ -341,7 +341,7 @@ class AnsibleExecutorPlugin(ExecutorPlugin):
                 # generated. lets go ahead and archive these for debugging
                 # purposes
                 self.logger.error(ex.message)
-                if (attr != 'git' or attr != 'artifacts') and self.artifacts is not None:
+                if self.artifacts is not None:
                     self.logger.info('Test Execution has failed but still fetching any test generated artifacts')
                     self.__artifacts__()
                     self.status = 1
